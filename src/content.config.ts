@@ -42,20 +42,4 @@ const posts = defineCollection({
         }),
 })
 
-// 画廊作品：一个 md 文件对应一幅画，图片放同目录
-const gallery = defineCollection({
-    loader: glob({
-        base: './src/content/gallery',
-        pattern: ['**/*.md'],
-        generateId,
-    }),
-    schema: ({ image }) =>
-        z.object({
-            title: z.string(),
-            image: image(),
-            date: z.coerce.date().optional(),
-            description: z.string().optional(),
-        }),
-})
-
-export const collections = { posts, gallery }
+export const collections = { posts }

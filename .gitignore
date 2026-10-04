@@ -32,3 +32,7 @@ pnpm-debug.log*
 # 文章由 scripts/import-content.mjs 从私有文章仓库导入
 src/content/posts/*
 !src/content/posts/.gitkeep
+
+# 画廊图片由 scripts/import-content.mjs 从私有文章仓库 gallery/ 导入
+src/assets/gallery/*
+!src/assets/gallery/.gitkeep

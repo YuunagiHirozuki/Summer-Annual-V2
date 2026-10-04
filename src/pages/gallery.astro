@@ -1,12 +1,23 @@
 ---
-import { getCollection } from 'astro:content'
+import type { ImageMetadata } from 'astro'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { SITE_TITLE } from '../consts'
 
-const artworks = (await getCollection('gallery')).sort(
-    (a, b) =>
-        (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0)
-)
+// 画廊：把图片扔进 src/assets/gallery/ 即可，文件名排序即展示顺序
+// （建议 01-xxx.png、02-xxx.png 编号命名）
+const images = Object.entries(
+    import.meta.glob<{ default: ImageMetadata }>(
+        '/src/assets/gallery/*.{webp,png,jpg,jpeg,gif,avif}',
+        { eager: true }
+    )
+).sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
+
+const artworks = images.map(([path, mod]) => ({
+    src: mod.default.src,
+    width: mod.default.width,
+    height: mod.default.height,
+    alt: path.split('/').pop()?.replace(/\.[^.]+$/, '') ?? '作品',
+}))
 ---
 
 <BaseLayout title={`Gallery - ${SITE_TITLE}`} hero="half">
@@ -17,34 +28,22 @@ const artworks = (await getCollection('gallery')).sort(
             artworks.length > 0 ? (
                 <div class="columns-1 gap-8 sm:columns-2 lg:columns-3">
                     {artworks.map((art) => (
-                        <figure class="gallery-piece mb-8 break-inside-avoid">
-                            <div class="rounded-sm bg-surface p-3 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                                <img
-                                    src={art.data.image.src}
-                                    alt={art.data.title}
-                                    width={art.data.image.width}
-                                    height={art.data.image.height}
-                                    loading="lazy"
-                                    decoding="async"
-                                    class="w-full rounded-[2px]"
-                                />
-                                <figcaption class="px-1 pt-3 pb-1 text-center">
-                                    <span class="text-sm text-ink">
-                                        {art.data.title}
-                                    </span>
-                                    {art.data.description && (
-                                        <span class="mt-0.5 block text-xs text-muted">
-                                            {art.data.description}
-                                        </span>
-                                    )}
-                                </figcaption>
-                            </div>
-                        </figure>
+                        <img
+                            src={art.src}
+                            alt={art.alt}
+                            width={art.width}
+                            height={art.height}
+                            loading="lazy"
+                            decoding="async"
+                            class="mb-8 w-full break-inside-avoid"
+                        />
                     ))}
                 </div>
             ) : (
                 <div class="rounded-sm bg-card p-6 shadow-md">
-                    <p class="text-muted">画廊筹备中…… 敬请期待。</p>
+                    <p class="text-muted">
+                        画廊筹备中…… 把图片放进 src/assets/gallery/ 即可展示。
+                    </p>
                 </div>
             )
         }
