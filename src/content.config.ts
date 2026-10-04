@@ -17,17 +17,29 @@ const posts = defineCollection({
         pattern: ['**/*.md', '**/*.mdx'],
         generateId,
     }),
-    schema: z.object({
-        title: z.string(),
-        description: z.string(),
-        pubDate: z.coerce.date(),
-        updatedDate: z.coerce.date().optional(),
-        image: z.string().optional(),
-        categories: z.string().optional(),
-        tags: z.array(z.string()).optional(),
-        draft: z.boolean().default(false),
-        pinned: z.boolean().default(false),
-    }),
+    schema: ({ image }) =>
+        z.object({
+            title: z.string(),
+            description: z.string(),
+            pubDate: z.coerce.date(),
+            updatedDate: z.coerce.date().optional(),
+            // 封面二选一：
+            //   - 相对路径 './images/cover.webp' → 文章自带图片，走 astro:assets
+            //   - 绝对路径 '/images/...' → public 公共路径，保持字符串
+            // 不能直接把 image() 放进 union：它会连绝对路径一起当作待打包
+            // 图片处理，导致构建失败，所以在这里按路径形态分流
+            image: z
+                .string()
+                .optional()
+                .transform((val) => {
+                    if (!val || val.startsWith('/')) return val
+                    return image().parse(val)
+                }),
+            categories: z.string().optional(),
+            tags: z.array(z.string()).optional(),
+            draft: z.boolean().default(false),
+            pinned: z.boolean().default(false),
+        }),
 })
 
 export const collections = { posts }

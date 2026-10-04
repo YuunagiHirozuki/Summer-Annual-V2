@@ -1,11 +1,12 @@
 ---
-import type { Post } from '../utils/posts'
+import { postCoverSrc, type Post } from '../utils/posts'
 
 interface Props {
     post: Post
 }
 
 const { post } = Astro.props
+const cover = postCoverSrc(post)
 ---
 
 <a
@@ -14,10 +15,10 @@ const { post } = Astro.props
 >
     {/* 左侧图片 */}
     {
-        post.data.image && (
+        cover && (
             <div class="h-48 w-full overflow-hidden sm:h-auto sm:w-1/3">
                 <img
-                    src={post.data.image}
+                    src={cover}
                     alt={post.data.title}
                     loading="lazy"
                     class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"

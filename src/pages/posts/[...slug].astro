@@ -2,7 +2,12 @@
 import { render } from 'astro:content'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import ArticleLayout from '../../layouts/ArticleLayout.astro'
-import { getSortedPosts, getAdjacentPosts, type Post } from '../../utils/posts'
+import {
+    getSortedPosts,
+    getAdjacentPosts,
+    postCoverSrc,
+    type Post,
+} from '../../utils/posts'
 import { SITE_TITLE } from '../../consts'
 
 export async function getStaticPaths() {
@@ -30,7 +35,7 @@ const { prev, next } = getAdjacentPosts(sorted, post)
     title={`${post.data.title} - ${SITE_TITLE}`}
     description={post.data.description}
     hero="full"
-    heroImage={post.data.image}
+    heroImage={postCoverSrc(post)}
 >
     <ArticleLayout post={post} prev={prev} next={next}>
         <Content />

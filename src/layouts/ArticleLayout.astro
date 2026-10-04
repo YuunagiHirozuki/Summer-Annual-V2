@@ -1,6 +1,6 @@
 ---
 import TOC from '../components/TOC.astro'
-import type { Post } from '../utils/posts'
+import { postCoverSrc, type Post } from '../utils/posts'
 
 interface Props {
     post: Post
@@ -9,7 +9,8 @@ interface Props {
 }
 
 const { post, prev, next } = Astro.props
-const { title, pubDate, updatedDate, image, tags } = post.data
+const { title, pubDate, updatedDate, tags } = post.data
+const cover = postCoverSrc(post)
 ---
 
 <!-- 文章页正文骨架：由页面放进 BaseLayout 的 <main> 里 -->
@@ -18,10 +19,10 @@ const { title, pubDate, updatedDate, image, tags } = post.data
         <article class="w-full overflow-hidden rounded-sm bg-card shadow-xl">
             <!-- 顶部头图 -->
             {
-                image && (
+                cover && (
                     <div class="relative aspect-[16/9] w-full overflow-hidden">
                         <img
-                            src={image}
+                            src={cover}
                             alt={title}
                             width="1920"
                             height="1080"

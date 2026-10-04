@@ -24,3 +24,11 @@ export function getAdjacentPosts(sorted: Post[], current: Post) {
                 : undefined,
     }
 }
+
+/** 封面图地址：兼容文章自带图片（运行时为 ImageMetadata）与公共路径（字符串） */
+export function postCoverSrc(post: Post): string | undefined {
+    const img: unknown = post.data.image
+    if (!img) return undefined
+    if (typeof img === 'string') return img
+    return (img as { src: string }).src
+}

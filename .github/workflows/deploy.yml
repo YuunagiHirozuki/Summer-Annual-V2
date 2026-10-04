@@ -1,0 +1,58 @@
+# 构建并部署到 Cloudflare Pages
+# 流程：检出网站 + 私有文章仓库 → 导入已发布文章 → pnpm build → 部署 dist/
+#
+# 需要在网站仓库 Settings → Secrets and variables → Actions 配置：
+#   ARTICLE_REPO_TOKEN     GitHub PAT（至少 article 仓库的 Contents: Read）
+#   CLOUDFLARE_API_TOKEN   Cloudflare API Token（Cloudflare Pages: Edit 权限）
+#   CLOUDFLARE_ACCOUNT_ID  Cloudflare Account ID
+name: Build and Deploy
+
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+    repository_dispatch:
+        types: [content-update] # 文章仓库推送后触发（见 README）
+
+permissions:
+    contents: read
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout website
+              uses: actions/checkout@v4
+
+            - name: Checkout article repo
+              uses: actions/checkout@v4
+              with:
+                  repository: YuunagiHirozuki/-Summer-Annual-Blog-Article
+                  token: ${{ secrets.ARTICLE_REPO_TOKEN }}
+                  path: article-repo
+
+            - name: Install pnpm
+              uses: pnpm/action-setup@v4 # 版本取自 package.json 的 packageManager
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Import published posts
+              run: node scripts/import-content.mjs article-repo
+
+            - name: Build
+              run: pnpm build
+
+            - name: Deploy to Cloudflare Pages
+              uses: cloudflare/wrangler-action@v3
+              with:
+                  apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  # 项目名在 Cloudflare Pages 建好后按需修改
+                  command: pages deploy dist --project-name=summer-annual
