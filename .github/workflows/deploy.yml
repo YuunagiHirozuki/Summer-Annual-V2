@@ -2,13 +2,14 @@
 # 流程：检出网站 + 私有文章仓库 → 导入已发布文章 → pnpm build → 部署 dist/
 #
 # 需要在网站仓库 Settings → Secrets and variables → Actions 配置：
-#   ARTICLE_REPO_TOKEN     GitHub PAT（至少 article 仓库的 Contents: Read）
-#   CLOUDFLARE_API_TOKEN   Cloudflare API Token（Pages Edit + Workers R2 Storage Read，
-#                          R2 Read 用于构建时列出画廊图片）
-#   CLOUDFLARE_ACCOUNT_ID  Cloudflare Account ID
+#   ARTICLE_REPO_TOKEN      GitHub PAT（至少 article 仓库的 Contents: Read）
+#   CLOUDFLARE_API_TOKEN    Cloudflare API Token（Pages Edit 权限）
+#   CLOUDFLARE_ACCOUNT_ID   Cloudflare Account ID
+#   R2_ACCESS_KEY_ID        R2 API Token 的 Access Key ID（Object Read，画廊用）
+#   R2_SECRET_ACCESS_KEY    上一个 token 的 Secret Access Key
 # Variables 标签页（非加密）：
-#   R2_BUCKET              画廊图片所在 R2 bucket 名
-#   R2_PUBLIC_BASE         bucket 的公开访问域名（https://pub-xxx.r2.dev 或自定义域）
+#   R2_BUCKET               画廊图片所在 R2 bucket 名
+#   R2_PUBLIC_BASE          bucket 的公开访问域名（https://pub-xxx.r2.dev 或自定义域）
 name: Build and Deploy
 
 on:
@@ -55,7 +56,8 @@ jobs:
             - name: Build
               run: pnpm build
               env:
-                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+                  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
                   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
                   R2_BUCKET: ${{ vars.R2_BUCKET }}
                   R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}

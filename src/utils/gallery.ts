@@ -1,74 +1,90 @@
 // 画廊图片来源：Cloudflare R2 bucket 的 gallery/ 目录
-// 构建时通过 Cloudflare API 列出对象（见 .env.example 的四个变量）。
-// 缺少凭据或请求失败时返回空列表：页面显示空态，不阻塞构建。
+// 构建时通过 S3 兼容的 ListObjectsV2 列出对象（用 R2 API Token 签名，
+// 见 .env.example 的变量说明）。缺少凭据或请求失败时返回空列表：
+// 页面显示空态，不阻塞构建。
+
+import { AwsClient } from 'aws4fetch'
 
 export interface GalleryImage {
     src: string
     alt: string
-    uploadedAt?: string
 }
 
 const IMAGE_EXTENSIONS = /\.(png|jpe?g|webp|gif|avif)$/i
 
+const decodeXmlEntities = (s: string) =>
+    s.replace(
+        /&(amp|lt|gt|quot|apos);/g,
+        (_, e: string) =>
+            ({ amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" })[e] ?? e
+    )
+
 export async function getGalleryImages(): Promise<GalleryImage[]> {
-    const token = process.env.CLOUDFLARE_API_TOKEN
+    const accessKeyId = process.env.R2_ACCESS_KEY_ID
+    const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY
     const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
     const bucket = process.env.R2_BUCKET
     const publicBase = process.env.R2_PUBLIC_BASE?.replace(/\/$/, '')
 
-    if (!token || !accountId || !bucket || !publicBase) {
+    if (
+        !accessKeyId ||
+        !secretAccessKey ||
+        !accountId ||
+        !bucket ||
+        !publicBase
+    ) {
         console.warn(
-            '[gallery] 缺少 R2 环境变量（CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID / R2_BUCKET / R2_PUBLIC_BASE），画廊为空'
+            '[gallery] 缺少 R2 环境变量（R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / CLOUDFLARE_ACCOUNT_ID / R2_BUCKET / R2_PUBLIC_BASE），画廊为空'
         )
         return []
     }
 
+    const r2 = new AwsClient({ accessKeyId, secretAccessKey })
+    const endpoint = `https://${accountId}.r2.cloudflarestorage.com/${bucket}`
     const images: GalleryImage[] = []
-    let cursor: string | undefined
+    let continuation: string | undefined
 
     try {
         do {
-            const url = new URL(
-                `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucket}/objects`
-            )
+            const url = new URL(endpoint)
+            url.searchParams.set('list-type', '2')
             url.searchParams.set('prefix', 'gallery/')
-            url.searchParams.set('per_page', '1000')
-            if (cursor) url.searchParams.set('cursor', cursor)
-
-            const res = await fetch(url, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            const json = (await res.json()) as {
-                success?: boolean
-                errors?: unknown
-                result?: Array<{ key: string; last_modified?: string }>
-                result_info?: { cursor?: string; is_truncated?: boolean }
+            url.searchParams.set('max-keys', '1000')
+            if (continuation) {
+                url.searchParams.set('continuation-token', continuation)
             }
-            if (!res.ok || !json.success) {
-                console.warn('[gallery] R2 列表请求失败:', json.errors ?? res.status)
+
+            const res = await r2.fetch(url.toString())
+            if (!res.ok) {
+                console.warn(
+                    '[gallery] R2 列表请求失败:',
+                    res.status,
+                    (await res.text()).slice(0, 200)
+                )
                 return []
             }
 
-            for (const obj of json.result ?? []) {
-                if (!IMAGE_EXTENSIONS.test(obj.key)) continue
-                const filename = obj.key.split('/').pop() ?? obj.key
+            const xml = await res.text()
+            for (const match of xml.matchAll(/<Key>([^<]+)<\/Key>/g)) {
+                const key = decodeXmlEntities(match[1])
+                if (!IMAGE_EXTENSIONS.test(key)) continue
+                const filename = key.split('/').pop() ?? key
                 images.push({
-                    src: `${publicBase}/${obj.key}`,
-                    alt: filename.replace(IMAGE_EXTENSIONS, ''),
-                    uploadedAt: obj.last_modified,
+                    src: `${publicBase}/${key}`,
+                    alt: decodeXmlEntities(filename.replace(IMAGE_EXTENSIONS, '')),
                 })
             }
 
-            cursor = json.result_info?.is_truncated
-                ? json.result_info.cursor
+            continuation = /<IsTruncated>true<\/IsTruncated>/.test(xml)
+                ? xml.match(/<NextContinuationToken>([^<]+)</)?.[1]
                 : undefined
-        } while (cursor)
+        } while (continuation)
     } catch (err) {
         console.warn('[gallery] R2 列表请求异常:', err)
         return []
     }
 
-    // 按对象 key 排序：文件名编号即展示顺序
+    // 按 key 排序：文件名编号即展示顺序
     return images.sort((a, b) =>
         a.src.localeCompare(b.src, undefined, { numeric: true })
     )

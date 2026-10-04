@@ -3,7 +3,7 @@
 个人网站：Astro 5 + Tailwind CSS 4 + TypeScript，部署到 Cloudflare Pages。
 文章源文件放在私有仓库 [Summer-Annual-Blog-Article]，构建时自动导入。
 
-> TODO: 加个网站留言板功能,放在About上面，侧边的小组件栏放置标签栏、文件夹(分类)栏，把主背景改成嵌入不随滚动移动的纯背景效果
+> TODO: 加个网站留言板功能,放在About上面，侧边的小组件栏放置文件夹(分类)栏，把主背景改成嵌入不随滚动移动的纯背景效果
 
 ## 命令
 
@@ -46,11 +46,13 @@ scripts/
 ## 画廊（图片存 Cloudflare R2）
 
 1. Cloudflare 建一个 R2 bucket，在 bucket 设置里开启公开访问（r2.dev 域名）
-2. 把图片上传到 bucket 的 `gallery/` 目录（png/jpg/webp/gif/avif，
+2. R2 → Manage R2 API Tokens → 创建一个 **Object Read** 权限的 API Token，
+   把 Access Key ID / Secret Access Key 配到网站仓库 Secrets
+3. 把图片上传到 bucket 的 `gallery/` 目录（png/jpg/webp/gif/avif，
    文件名排序即展示顺序，建议 `01-xxx.png` 编号命名）
-3. 触发一次构建：网站仓库 Actions 手动 Run，或等每日定时（北京时间 05:00）
+4. 触发一次构建：网站仓库 Actions 手动 Run，或等每日定时（北京时间 05:00）
 
-画廊页在构建时通过 Cloudflare API 列出 bucket 的 `gallery/` 对象，
+画廊页在构建时通过 S3 接口列出 bucket 的 `gallery/` 对象，
 所以图片上传本身不需要动任何仓库。
 
 ## 部署（.github/workflows/deploy.yml）
@@ -66,8 +68,10 @@ scripts/
 | Secret | 说明 |
 | --- | --- |
 | `ARTICLE_REPO_TOKEN` | GitHub PAT，至少可读文章仓库 |
-| `CLOUDFLARE_API_TOKEN` | Cloudflare API Token（Pages Edit + Workers R2 Storage Read） |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API Token（Pages Edit 权限） |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare Account ID |
+| `R2_ACCESS_KEY_ID` | R2 API Token 的 Access Key ID（Object Read，画廊列表用） |
+| `R2_SECRET_ACCESS_KEY` | 上一个 token 的 Secret Access Key |
 
 Variables 标签页（非加密变量，画廊构建时读取）：
 
