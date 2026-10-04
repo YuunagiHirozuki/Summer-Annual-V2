@@ -50,7 +50,7 @@ scripts/
    把 Access Key ID / Secret Access Key 配到网站仓库 Secrets
 3. 把图片上传到 bucket 的 `gallery/` 目录（png/jpg/webp/gif/avif，
    文件名排序即展示顺序，建议 `01-xxx.png` 编号命名）
-4. 触发一次构建：网站仓库 Actions 手动 Run，或等每日定时（北京时间 05:00）
+4. 触发一次构建：网站仓库 Actions 手动 Run
 
 画廊页在构建时通过 S3 接口列出 bucket 的 `gallery/` 对象，
 所以图片上传本身不需要动任何仓库。
@@ -59,8 +59,8 @@ scripts/
 
 ```text
 文章仓库 push ──┐
-网站仓库 push ──┼→ GitHub Actions：检出两仓库 → 导入已发布文章 → pnpm build
-每日定时 ───────┘        → wrangler pages deploy dist → Cloudflare Pages
+网站仓库 push ──┘→ GitHub Actions：检出两仓库 → 导入已发布文章 → pnpm build
+                        → wrangler pages deploy dist → Cloudflare Pages
 ```
 
 网站仓库需要配置的 Secrets（Settings → Secrets and variables → Actions）：
