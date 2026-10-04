@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets'
 import TOC from '../components/TOC.astro'
 import { postCoverSrc, type Post } from '../utils/posts'
 
@@ -10,6 +11,7 @@ interface Props {
 
 const { post, prev, next } = Astro.props
 const { title, pubDate, updatedDate, tags } = post.data
+const rawImage = post.data.image
 const cover = postCoverSrc(post)
 ---
 
@@ -17,19 +19,29 @@ const cover = postCoverSrc(post)
 <div class="flex justify-center gap-8 px-4 py-12">
     <div class="w-full max-w-[690px]">
         <article class="w-full overflow-hidden rounded-sm bg-card shadow-xl">
-            <!-- 顶部头图 -->
+            <!-- 顶部头图（构建时缩到 1380px webp，避免浏览器缩放锯齿） -->
             {
                 cover && (
                     <div class="relative aspect-[16/9] w-full overflow-hidden">
-                        <img
-                            src={cover}
-                            alt={title}
-                            width="1920"
-                            height="1080"
-                            loading="lazy"
-                            decoding="async"
-                            class="h-full w-full object-cover"
-                        />
+                        {typeof rawImage === 'string' ? (
+                            <img
+                                src={cover}
+                                alt={title}
+                                loading="lazy"
+                                decoding="async"
+                                class="h-full w-full object-cover"
+                            />
+                        ) : (
+                            <Image
+                                src={rawImage}
+                                alt={title}
+                                width={1380}
+                                format="webp"
+                                loading="lazy"
+                                decoding="async"
+                                class="h-full w-full object-cover"
+                            />
+                        )}
                     </div>
                 )
             }
