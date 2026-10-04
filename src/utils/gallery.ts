@@ -19,12 +19,19 @@ const decodeXmlEntities = (s: string) =>
             ({ amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" })[e] ?? e
     )
 
+/** Astro 的 .env 只进 import.meta.env，CI 的 workflow env 只进 process.env，两边都读 */
+function env(key: string): string | undefined {
+    const fromImportMeta = (import.meta.env as Record<string, unknown>)[key]
+    return (typeof fromImportMeta === 'string' ? fromImportMeta : undefined) ??
+        process.env[key]
+}
+
 export async function getGalleryImages(): Promise<GalleryImage[]> {
-    const accessKeyId = process.env.R2_ACCESS_KEY_ID
-    const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY
-    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
-    const bucket = process.env.R2_BUCKET
-    const publicBase = process.env.R2_PUBLIC_BASE?.replace(/\/$/, '')
+    const accessKeyId = env('R2_ACCESS_KEY_ID')
+    const secretAccessKey = env('R2_SECRET_ACCESS_KEY')
+    const accountId = env('CLOUDFLARE_ACCOUNT_ID')
+    const bucket = env('R2_BUCKET')
+    const publicBase = env('R2_PUBLIC_BASE')?.replace(/\/$/, '')
 
     if (
         !accessKeyId ||
