@@ -2,6 +2,20 @@
 import { SITE_TITLE } from '../consts'
 import HeaderLink from './HeaderLink.astro'
 import { Icon } from 'astro-icon/components'
+
+const pathname = Astro.url.pathname.replace(import.meta.env.BASE_URL, '')
+const subpath = pathname.match(/[^/]+/g)
+const isActive = (href: string) =>
+    href === pathname || href === '/' + (subpath?.[0] || '')
+
+const links = [
+    { href: '/', label: 'BLOG' },
+    { href: '/projects', label: 'PROJECTS' },
+    { href: '/gallery', label: 'GALLERY' },
+    { href: '#about', label: 'ABOUT' },
+    { href: '#contact', label: 'CONTACT' },
+    { href: '/archive', label: 'ARCHIVE' },
+]
 ---
 
 <nav
@@ -16,20 +30,17 @@ import { Icon } from 'astro-icon/components'
             >
         </div>
 
-        <!-- Links：窄屏横向滚动 -->
-        <div
-            class="flex min-w-0 space-x-5 overflow-x-auto text-sm text-ink [-ms-overflow-style:none] [scrollbar-width:none] sm:space-x-15 sm:text-base"
-        >
-            <HeaderLink href="/">BLOG</HeaderLink>
-            <HeaderLink href="/projects">PROJECTS</HeaderLink>
-            <HeaderLink href="/gallery">GALLERY</HeaderLink>
-            <HeaderLink href="#about">ABOUT</HeaderLink>
-            <HeaderLink href="#contact">CONTACT</HeaderLink>
-            <HeaderLink href="/archive">ARCHIVE</HeaderLink>
+        <!-- 桌面端链接 -->
+        <div class="hidden space-x-15 text-base text-ink lg:flex">
+            {
+                links.map((l) => (
+                    <HeaderLink href={l.href}>{l.label}</HeaderLink>
+                ))
+            }
         </div>
 
-        <!-- 白天/黑夜切换 -->
-        <div class="shrink-0">
+        <div class="flex shrink-0 items-center gap-2">
+            <!-- 白天/黑夜切换 -->
             <button
                 type="button"
                 data-theme-toggle
@@ -45,9 +56,48 @@ import { Icon } from 'astro-icon/components'
                     class="theme-icon-light text-xl"
                 />
             </button>
+
+            <!-- 移动端菜单按钮 -->
+            <button
+                type="button"
+                id="menu-btn"
+                aria-label="打开菜单"
+                aria-expanded="false"
+                aria-controls="mobile-drawer"
+                class="flex h-8 w-8 items-center justify-center rounded-full text-ink transition-colors duration-300 hover:bg-ink hover:text-aqua lg:hidden"
+            >
+                <Icon name="mdi:menu" class="text-xl" />
+            </button>
         </div>
     </div>
 </nav>
+
+<!-- 抽屉遮罩 -->
+<div id="drawer-backdrop" class="fixed inset-0 z-40 bg-black/50 lg:hidden">
+</div>
+
+<!-- 抽屉：从左侧滑出 -->
+<aside
+    id="mobile-drawer"
+    class="fixed left-0 top-0 z-50 h-full w-64 bg-surface shadow-xl lg:hidden"
+    aria-label="站点导航"
+>
+    <div class="flex h-full flex-col gap-1 overflow-y-auto p-6 pt-20">
+        {
+            links.map((l) => (
+                <a
+                    href={l.href}
+                    class:list={[
+                        'block rounded px-3 py-2 text-base no-underline transition-colors duration-300 hover:text-aqua',
+                        isActive(l.href) ? 'text-aqua' : 'text-ink',
+                    ]}
+                >
+                    {l.label}
+                </a>
+            ))
+        }
+    </div>
+</aside>
 
 <style>
     /* 滚动后导航条变实底（由脚本切换 .nav--scrolled） */
@@ -60,6 +110,27 @@ import { Icon } from 'astro-icon/components'
         box-shadow:
             0 4px 6px -1px rgb(0 0 0 / 0.1),
             0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    /* 抽屉默认收起，.drawer-open 时滑出 */
+    #mobile-drawer {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    #mobile-drawer.drawer-open {
+        transform: translateX(0);
+    }
+
+    #drawer-backdrop {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    #drawer-backdrop.drawer-open {
+        opacity: 1;
+        pointer-events: auto;
     }
 </style>
 
@@ -87,6 +158,39 @@ import { Icon } from 'astro-icon/components'
         localStorage.setItem('theme', next)
     })
 
+    // ===== 移动端抽屉菜单 =====
+    // 全部用 document 级事件委托：ClientRouter 换页会替换按钮/抽屉节点，
+    // 绑在节点上的监听器会随旧节点丢失，委托则始终有效
+    function setDrawer(open: boolean) {
+        document
+            .getElementById('mobile-drawer')
+            ?.classList.toggle('drawer-open', open)
+        document
+            .getElementById('drawer-backdrop')
+            ?.classList.toggle('drawer-open', open)
+        document
+            .getElementById('menu-btn')
+            ?.setAttribute('aria-expanded', String(open))
+    }
+
+    document.addEventListener('click', (event) => {
+        const target =
+            event.target instanceof Element ? event.target : null
+        if (!target) return
+        if (target.closest('#menu-btn')) {
+            setDrawer(true)
+        } else if (
+            target.closest('#drawer-backdrop') ||
+            target.closest('#mobile-drawer a')
+        ) {
+            setDrawer(false)
+        }
+    })
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') setDrawer(false)
+    })
+
     // ===== 导航条：滚过阈值变实底；滑过 hero 后下滑隐藏、上滑出现 =====
     let heroHeight = 400
     let lastScrollY = 0
@@ -110,11 +214,15 @@ import { Icon } from 'astro-icon/components'
         const nav = document.getElementById('navbar')
         if (!nav) return
 
+        // 换页后抽屉恢复收起
+        setDrawer(false)
+
         // 每次换页重新测量 hero 高度
         heroHeight = document.querySelector('#hero')?.offsetHeight ?? 400
 
         if (!nav.dataset.bound) {
             nav.dataset.bound = '1'
+
             window.addEventListener(
                 'scroll',
                 () => {
