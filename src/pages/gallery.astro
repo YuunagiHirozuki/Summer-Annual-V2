@@ -1,23 +1,9 @@
 ---
-import type { ImageMetadata } from 'astro'
+import { getGalleryImages } from '../utils/gallery'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { SITE_TITLE } from '../consts'
 
-// 画廊：把图片扔进 src/assets/gallery/ 即可，文件名排序即展示顺序
-// （建议 01-xxx.png、02-xxx.png 编号命名）
-const images = Object.entries(
-    import.meta.glob<{ default: ImageMetadata }>(
-        '/src/assets/gallery/*.{webp,png,jpg,jpeg,gif,avif}',
-        { eager: true }
-    )
-).sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
-
-const artworks = images.map(([path, mod]) => ({
-    src: mod.default.src,
-    width: mod.default.width,
-    height: mod.default.height,
-    alt: path.split('/').pop()?.replace(/\.[^.]+$/, '') ?? '作品',
-}))
+const artworks = await getGalleryImages()
 ---
 
 <BaseLayout title={`Gallery - ${SITE_TITLE}`} hero="half">
@@ -31,8 +17,6 @@ const artworks = images.map(([path, mod]) => ({
                         <img
                             src={art.src}
                             alt={art.alt}
-                            width={art.width}
-                            height={art.height}
                             loading="lazy"
                             decoding="async"
                             class="mb-8 w-full break-inside-avoid"
@@ -42,7 +26,8 @@ const artworks = images.map(([path, mod]) => ({
             ) : (
                 <div class="rounded-sm bg-card p-6 shadow-md">
                     <p class="text-muted">
-                        画廊筹备中…… 把图片放进 src/assets/gallery/ 即可展示。
+                        画廊筹备中…… 把图片上传到 R2 bucket 的 gallery/ 目录后，
+                        触发一次网站构建即可展示（见仓库 README 的画廊说明）。
                     </p>
                 </div>
             )

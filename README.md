@@ -40,14 +40,25 @@ scripts/
 ## 写文章
 
 在私有文章仓库 `posts/<slug>/` 下写 `index.md`，图片放同目录 `images/`，
-`draft: true` 不会发布。完整格式见文章仓库的 README。
+`draft: true` 不会发布。仓库根目录的 `_template.md` 是 front matter 模板。
+完整格式见文章仓库的 README。
+
+## 画廊（图片存 Cloudflare R2）
+
+1. Cloudflare 建一个 R2 bucket，在 bucket 设置里开启公开访问（r2.dev 域名）
+2. 把图片上传到 bucket 的 `gallery/` 目录（png/jpg/webp/gif/avif，
+   文件名排序即展示顺序，建议 `01-xxx.png` 编号命名）
+3. 触发一次构建：网站仓库 Actions 手动 Run，或等每日定时（北京时间 05:00）
+
+画廊页在构建时通过 Cloudflare API 列出 bucket 的 `gallery/` 对象，
+所以图片上传本身不需要动任何仓库。
 
 ## 部署（.github/workflows/deploy.yml）
 
 ```text
 文章仓库 push ──┐
 网站仓库 push ──┼→ GitHub Actions：检出两仓库 → 导入已发布文章 → pnpm build
-手动触发 ──────┘        → wrangler pages deploy dist → Cloudflare Pages
+每日定时 ───────┘        → wrangler pages deploy dist → Cloudflare Pages
 ```
 
 网站仓库需要配置的 Secrets（Settings → Secrets and variables → Actions）：
@@ -55,8 +66,17 @@ scripts/
 | Secret | 说明 |
 | --- | --- |
 | `ARTICLE_REPO_TOKEN` | GitHub PAT，至少可读文章仓库 |
-| `CLOUDFLARE_API_TOKEN` | Cloudflare API Token（Pages Edit 权限） |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API Token（Pages Edit + Workers R2 Storage Read） |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare Account ID |
+
+Variables 标签页（非加密变量，画廊构建时读取）：
+
+| Variable | 说明 |
+| --- | --- |
+| `R2_BUCKET` | 画廊图片所在的 R2 bucket 名 |
+| `R2_PUBLIC_BASE` | bucket 公开访问域名，如 `https://pub-xxxxxxxx.r2.dev` |
+
+本地开发时把同样的值填进 `.env`（模板见 `.env.example`）。
 
 文章仓库已配置「push 即更新网站」：其 `.github/workflows/notify-site.yml`
 会向本仓库发 `repository_dispatch`（event_type: `content-update`）。

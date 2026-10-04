@@ -142,7 +142,7 @@ const cover = postCoverSrc(post)
             const btn = document.createElement('button')
             btn.type = 'button'
             btn.className = 'code-copy'
-            btn.textContent = '复制'
+            btn.textContent = 'copy'
             btn.addEventListener('click', async () => {
                 try {
                     await navigator.clipboard.writeText(code?.innerText ?? '')

@@ -14,12 +14,11 @@
 //       └── index.md
 //
 // 规则（见 AGENTS.md §21）：
-//   1. 只读取 posts/ 与 gallery/ 目录；drafts/ 等其他目录一律不碰
+//   1. 只读取 posts/ 目录；drafts/ 等其他目录一律不碰
 //   2. 只导入 front matter 里 draft 不为 true 的文章
-//   3. 只复制 .md/.mdx、图片文件，其他文件类型忽略
-//   4. 已有同名文章/图片会被覆盖（文章仓库为准），未导入的本地文件保持不动
-//   5. 找不到文章仓库或没有可导入文章时，以非零码退出（构建失败要显眼）；
-//      gallery/ 是可选项，缺失时只提示不报错
+//   3. 只复制 .md/.mdx 与图片文件，其他文件类型忽略
+//   4. 已有同名文章会被覆盖（文章仓库为准），未导入的本地文章保持不动
+//   5. 找不到文章仓库或没有可导入文章时，以非零码退出（构建失败要显眼）
 
 import {
     cpSync,
@@ -141,20 +140,3 @@ console.log(
     `[import-content] 完成: 导入 ${imported} 篇，跳过草稿 ${skippedDrafts} 篇 → ${destRoot}`
 )
 console.log(`[import-content] 文章: ${importedNames.join(', ')}`)
-
-// ===== 画廊：可选目录，纯图片复制（文件名排序即展示顺序） =====
-const gallerySource = join(repoPath, 'gallery')
-const galleryDest = resolve('src/assets/gallery')
-
-if (existsSync(gallerySource)) {
-    mkdirSync(galleryDest, { recursive: true })
-    let galleryCount = 0
-    for (const name of readdirSync(gallerySource)) {
-        if (!IMAGE_EXTENSIONS.has(extname(name).toLowerCase())) continue
-        cpSync(join(gallerySource, name), join(galleryDest, name))
-        galleryCount++
-    }
-    console.log(`[import-content] 画廊: 复制 ${galleryCount} 张图片 → ${galleryDest}`)
-} else {
-    console.log('[import-content] 画廊: 文章仓库没有 gallery/ 目录，跳过')
-}

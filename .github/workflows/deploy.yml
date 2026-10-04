@@ -3,14 +3,20 @@
 #
 # 需要在网站仓库 Settings → Secrets and variables → Actions 配置：
 #   ARTICLE_REPO_TOKEN     GitHub PAT（至少 article 仓库的 Contents: Read）
-#   CLOUDFLARE_API_TOKEN   Cloudflare API Token（Cloudflare Pages: Edit 权限）
+#   CLOUDFLARE_API_TOKEN   Cloudflare API Token（Pages Edit + Workers R2 Storage Read，
+#                          R2 Read 用于构建时列出画廊图片）
 #   CLOUDFLARE_ACCOUNT_ID  Cloudflare Account ID
+# Variables 标签页（非加密）：
+#   R2_BUCKET              画廊图片所在 R2 bucket 名
+#   R2_PUBLIC_BASE         bucket 的公开访问域名（https://pub-xxx.r2.dev 或自定义域）
 name: Build and Deploy
 
 on:
     push:
         branches: [main]
     workflow_dispatch:
+    schedule:
+        - cron: '0 21 * * *' # 每日北京时间 05:00 重建，刷新 R2 画廊
     repository_dispatch:
         types: [content-update] # 文章仓库推送后触发（见 README）
 
@@ -48,6 +54,11 @@ jobs:
 
             - name: Build
               run: pnpm build
+              env:
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  R2_BUCKET: ${{ vars.R2_BUCKET }}
+                  R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
 
             - name: Deploy to Cloudflare Pages
               uses: cloudflare/wrangler-action@v3
