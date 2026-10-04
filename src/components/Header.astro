@@ -25,13 +25,13 @@ const links = [
     <div class="flex items-center justify-between gap-4">
         <!-- Logo -->
         <div class="shrink-0">
-            <a href="#top" class="text-2xl text-ink no-underline"
+            <a href="#top" class="text-2xl no-underline"
                 >{SITE_TITLE}</a
             >
         </div>
 
         <!-- 桌面端链接 -->
-        <div class="hidden space-x-15 text-base text-ink lg:flex">
+        <div class="hidden space-x-15 text-base lg:flex">
             {
                 links.map((l) => (
                     <HeaderLink href={l.href}>{l.label}</HeaderLink>
@@ -45,7 +45,7 @@ const links = [
                 type="button"
                 data-theme-toggle
                 aria-label="切换白天/黑夜模式"
-                class="flex h-8 w-8 items-center justify-center rounded-full text-ink transition-colors duration-300 hover:bg-ink hover:text-aqua"
+                class="flex h-8 w-8 items-center justify-center rounded-full transition-colors duration-300 hover:bg-ink hover:text-aqua"
             >
                 <Icon
                     name="mdi:weather-night"
@@ -64,7 +64,7 @@ const links = [
                 aria-label="打开菜单"
                 aria-expanded="false"
                 aria-controls="mobile-drawer"
-                class="flex h-8 w-8 items-center justify-center rounded-full text-ink transition-colors duration-300 hover:bg-ink hover:text-aqua lg:hidden"
+                class="flex h-8 w-8 items-center justify-center rounded-full transition-colors duration-300 hover:bg-ink hover:text-aqua lg:hidden"
             >
                 <Icon name="mdi:menu" class="text-xl" />
             </button>
@@ -141,6 +141,15 @@ const links = [
     }
     html[data-theme='light'] .theme-icon-dark {
         display: none;
+    }
+
+    /* 悬浮在 hero 上方（未滚动）时，导航文字/图标跟随 --on-hero，
+       不随主题切换变色；滚动出 hero 后用常规 --ink */
+    body.has-hero #navbar:not(.nav--scrolled) {
+        color: var(--on-hero);
+    }
+    #navbar.nav--scrolled {
+        color: var(--ink);
     }
 </style>
 

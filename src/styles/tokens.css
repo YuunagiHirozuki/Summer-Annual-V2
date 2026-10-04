@@ -24,6 +24,10 @@
 
     --tag-bg: rgba(125, 226, 209, 0.15);
     --selection: rgba(125, 226, 209, 0.25);
+
+    /* 悬浮在 hero 图片上的元素颜色：黑白两主题下都不随主题切换，
+       按 hero 实际图片手动调整这一个值即可 */
+    --on-hero: #ffffff;
 }
 
 :root[data-theme='light'] {
@@ -59,6 +63,7 @@
     --color-aqua-hover: var(--aqua-hover);
     --color-aqua-contrast: var(--aqua-contrast);
     --color-tag-bg: var(--tag-bg);
+    --color-on-hero: var(--on-hero);
 
     --font-body: 'Atkinson', ui-sans-serif, system-ui, sans-serif;
 }

@@ -39,7 +39,10 @@ const { title, description, hero = 'half', heroImage } = Astro.props
         </script>
     </head>
 
-    <body id="top" class="bg-background text-ink">
+    <body
+        id="top"
+        class:list={['bg-background text-ink', hero !== 'none' && 'has-hero']}
+    >
         <Header transition:persist />
 
         {
