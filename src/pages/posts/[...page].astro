@@ -32,13 +32,15 @@ const visiblePosts = sortedPosts.slice(
 
 <BaseLayout title={`BLOG - ${SITE_TITLE}`} hero="full">
     <div class="mx-auto flex w-full justify-center gap-8 px-4 py-8">
-        <div class="w-full max-w-260">
+        <div class="w-full max-w-240">
             <h2 class="mb-10 flex items-center justify-center text-2xl font-bold">
                 BLOG
             </h2>
 
             <div class="grid gap-6">
-                {visiblePosts.map((post) => <PostCard post={post} />)}
+                {visiblePosts.map((post, i) => (
+                    <PostCard post={post} index={i} />
+                ))}
             </div>
 
             <Pagination {currentPage} {totalPages} />
