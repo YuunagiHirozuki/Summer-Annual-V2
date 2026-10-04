@@ -76,10 +76,10 @@ const links = [
 <div id="drawer-backdrop" class="fixed inset-0 z-40 bg-black/50 lg:hidden">
 </div>
 
-<!-- 抽屉：从左侧滑出 -->
+<!-- 抽屉：从右侧滑出 -->
 <aside
     id="mobile-drawer"
-    class="fixed left-0 top-0 z-50 h-full w-64 bg-surface shadow-xl lg:hidden"
+    class="fixed right-0 top-0 z-50 h-full w-64 bg-surface shadow-xl lg:hidden"
     aria-label="站点导航"
 >
     <div class="flex h-full flex-col gap-1 overflow-y-auto p-6 pt-20">
@@ -112,9 +112,9 @@ const links = [
             0 2px 4px -2px rgb(0 0 0 / 0.1);
     }
 
-    /* 抽屉默认收起，.drawer-open 时滑出 */
+    /* 抽屉默认收起，.drawer-open 时滑出（从右侧） */
     #mobile-drawer {
-        transform: translateX(-100%);
+        transform: translateX(100%);
         transition: transform 0.3s ease;
     }
 
