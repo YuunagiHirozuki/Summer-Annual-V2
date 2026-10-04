@@ -84,8 +84,8 @@ export async function getGalleryImages(): Promise<GalleryImage[]> {
         return []
     }
 
-    // 按 key 排序：文件名编号即展示顺序
+    // 按 key 降序：编号大的（最新的）排前面
     return images.sort((a, b) =>
-        a.src.localeCompare(b.src, undefined, { numeric: true })
+        b.src.localeCompare(a.src, undefined, { numeric: true })
     )
 }
