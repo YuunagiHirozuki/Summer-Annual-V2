@@ -8,8 +8,8 @@ import icon from 'astro-icon'
 
 // https://astro.build/config
 export default defineConfig({
-    // TODO: Cloudflare Pages 域名确定后替换
-    site: 'https://hirozuki.vercel.app',
+    // 以后若绑定自定义域名，只需改这一行
+    site: 'https://summer-annual.pages.dev',
     output: 'static',
     integrations: [mdx(), sitemap(), icon()],
 
