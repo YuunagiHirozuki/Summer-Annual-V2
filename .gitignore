@@ -28,3 +28,7 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# 文章由 scripts/import-content.mjs 从私有文章仓库导入
+src/content/posts/*
+!src/content/posts/.gitkeep
