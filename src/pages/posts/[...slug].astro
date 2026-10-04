@@ -34,7 +34,7 @@ const { prev, next } = getAdjacentPosts(sorted, post)
 <BaseLayout
     title={`${post.data.title} - ${SITE_TITLE}`}
     description={post.data.description}
-    hero="full"
+    hero="half"
     heroImage={postCoverSrc(post)}
 >
     <ArticleLayout post={post} prev={prev} next={next}>

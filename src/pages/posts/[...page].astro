@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import PostCard from '../../components/PostCard.astro'
 import Pagination from '../../components/Pagination.astro'
+import TagWidget from '../../components/TagWidget.astro'
 import { getSortedPosts, POSTS_PER_PAGE, type Post } from '../../utils/posts'
 import { SITE_TITLE } from '../../consts'
 
@@ -30,15 +31,19 @@ const visiblePosts = sortedPosts.slice(
 ---
 
 <BaseLayout title={`BLOG - ${SITE_TITLE}`} hero="full">
-    <div class="mx-auto w-full max-w-260 px-4 py-8">
-        <h2 class="mb-10 flex items-center justify-center text-2xl font-bold">
-            BLOG
-        </h2>
+    <div class="mx-auto flex w-full justify-center gap-8 px-4 py-8">
+        <div class="w-full max-w-260">
+            <h2 class="mb-10 flex items-center justify-center text-2xl font-bold">
+                BLOG
+            </h2>
 
-        <div class="grid gap-6">
-            {visiblePosts.map((post) => <PostCard post={post} />)}
+            <div class="grid gap-6">
+                {visiblePosts.map((post) => <PostCard post={post} />)}
+            </div>
+
+            <Pagination {currentPage} {totalPages} />
         </div>
 
-        <Pagination {currentPage} {totalPages} />
+        <TagWidget />
     </div>
 </BaseLayout>

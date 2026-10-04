@@ -13,8 +13,8 @@ import BackToTop from '../components/BackToTop.astro'
 interface Props {
     title: string
     description?: string
-    /** hero 封面：full = 全屏（首页/文章页），half = 半屏（内页） */
-    hero?: 'full' | 'half'
+    /** hero 封面：full = 全屏（首页），half = 半屏（内页），none = 无（文章页/404） */
+    hero?: 'full' | 'half' | 'none'
     /** 半屏封面图 / og:image */
     heroImage?: string
 }
@@ -45,12 +45,12 @@ const { title, description, hero = 'half', heroImage } = Astro.props
         {
             hero === 'full' ? (
                 <Hero />
-            ) : (
+            ) : hero === 'half' ? (
                 <HalfHero image={heroImage ?? '/images/halfcover.png'} />
-            )
+            ) : null
         }
 
-        <main id="main" class="w-full">
+        <main id="main" class:list={['w-full', hero === 'none' && 'pt-16']}>
             <slot />
         </main>
 

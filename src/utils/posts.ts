@@ -32,3 +32,16 @@ export function postCoverSrc(post: Post): string | undefined {
     if (typeof img === 'string') return img
     return (img as { src: string }).src
 }
+
+/** 汇总标签出现次数：按次数降序，同次数按名称排序 */
+export function getTagCounts(posts: Post[]): [string, number][] {
+    const counts = new Map<string, number>()
+    for (const post of posts) {
+        for (const tag of post.data.tags ?? []) {
+            counts.set(tag, (counts.get(tag) ?? 0) + 1)
+        }
+    }
+    return [...counts.entries()].sort(
+        (a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh')
+    )
+}

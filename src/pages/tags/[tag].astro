@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getSortedPosts, getTagCounts, type Post } from '../../utils/posts'
+import { SITE_TITLE } from '../../consts'
+
+export async function getStaticPaths() {
+    const posts = await getSortedPosts()
+    return getTagCounts(posts).map(([tag]) => ({
+        params: { tag },
+        props: {
+            tag,
+            posts: posts.filter((p) => (p.data.tags ?? []).includes(tag)),
+        },
+    }))
+}
+
+interface Props {
+    tag: string
+    posts: Post[]
+}
+
+const { tag, posts } = Astro.props
+---
+
+<BaseLayout title={`#${tag} - ${SITE_TITLE}`} hero="half">
+    <div class="mx-auto w-full max-w-180 px-4 py-8">
+        <h1 class="mb-10 text-center text-3xl font-bold text-aqua">#{tag}</h1>
+
+        <ul class="grid gap-2">
+            {
+                posts.map((post) => (
+                    <li class="rounded-sm bg-card px-4 py-3 shadow-md transition-shadow hover:shadow-lg">
+                        <a
+                            href={`/posts/${post.id}/`}
+                            class="flex items-baseline justify-between gap-4 no-underline"
+                        >
+                            <span class="text-ink transition-colors hover:text-aqua">
+                                {post.data.title}
+                            </span>
+                            <time
+                                datetime={post.data.pubDate.toISOString()}
+                                class="shrink-0 text-sm text-muted"
+                            >
+                                {post.data.pubDate.toLocaleDateString('zh-CN')}
+                            </time>
+                        </a>
+                    </li>
+                ))
+            }
+        </ul>
+    </div>
+</BaseLayout>

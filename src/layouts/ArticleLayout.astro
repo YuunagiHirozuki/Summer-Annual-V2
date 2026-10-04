@@ -116,3 +116,49 @@ const cover = postCoverSrc(post)
     <!-- 桌面端浮动目录 -->
     <TOC />
 </div>
+
+<script>
+    // 代码块工具条：语言标签 + 复制按钮（hover 浮现，样式在 prose.css）
+    function initCodeToolbars() {
+        document.querySelectorAll('.md-content pre').forEach((pre) => {
+            if (pre.dataset.toolbar) return
+            pre.dataset.toolbar = '1'
+
+            const toolbar = document.createElement('div')
+            toolbar.className = 'code-toolbar'
+
+            const code = pre.querySelector('code')
+            const lang =
+                pre.getAttribute('data-language') ||
+                code?.className.match(/language-([\w-]+)/)?.[1] ||
+                ''
+            if (lang) {
+                const label = document.createElement('span')
+                label.className = 'code-lang'
+                label.textContent = lang
+                toolbar.appendChild(label)
+            }
+
+            const btn = document.createElement('button')
+            btn.type = 'button'
+            btn.className = 'code-copy'
+            btn.textContent = '复制'
+            btn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(code?.innerText ?? '')
+                    btn.textContent = '已复制'
+                } catch {
+                    btn.textContent = '复制失败'
+                }
+                setTimeout(() => {
+                    btn.textContent = '复制'
+                }, 1500)
+            })
+            toolbar.appendChild(btn)
+
+            pre.appendChild(toolbar)
+        })
+    }
+
+    document.addEventListener('astro:page-load', initCodeToolbars)
+</script>

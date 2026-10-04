@@ -2,11 +2,14 @@
 
 .md-content {
     font-size: 1rem;
+    line-height: 1.8;
 }
 
 .md-content > :first-child {
     margin-top: 0;
 }
+
+/* ===== 标题层级：层级差明显、上间距大于下间距，形成呼吸感 ===== */
 
 .md-content h1,
 .md-content h2,
@@ -14,18 +17,26 @@
 .md-content h4,
 .md-content h5 {
     font-weight: 700;
-    line-height: 1.3;
-    margin: 1.6em 0 0.6em;
+    line-height: 1.35;
+    margin: 2em 0 0.7em;
 }
 
-.md-content a {
-    color: var(--aqua);
-    text-decoration: underline;
-    text-underline-offset: 3px;
+.md-content h2 {
+    font-size: 1.5em;
+    padding-bottom: 0.35em;
+    border-bottom: 1px solid var(--border);
 }
 
-.md-content a:hover {
-    color: var(--aqua-hover);
+.md-content h3 {
+    font-size: 1.25em;
+}
+
+.md-content h4 {
+    font-size: 1.1em;
+}
+
+.md-content h5 {
+    font-size: 1em;
 }
 
 /* 标题锚点（rehype-autolink-headings append） */
@@ -41,6 +52,23 @@
     opacity: 0.7;
 }
 
+/* ===== 正文元素 ===== */
+
+.md-content p {
+    margin: 1.1em 0;
+}
+
+.md-content a {
+    color: var(--aqua);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+.md-content a:hover {
+    color: var(--aqua-hover);
+}
+
 .md-content img {
     max-width: 100%;
     height: auto;
@@ -50,48 +78,34 @@
 
 .md-content ul,
 .md-content ol {
-    padding-left: 1.5em;
+    padding-left: 1.6em;
 }
 
-.md-content li + li {
-    margin-top: 0.35em;
+.md-content li {
+    margin: 0.45em 0;
+}
+
+.md-content li > p {
+    margin: 0.4em 0;
 }
 
 .md-content blockquote {
     margin: 1.5em 0;
-    border-left: 4px solid var(--aqua);
-    padding: 0 0 0 20px;
+    border-left: 3px solid var(--aqua);
+    border-radius: 0 6px 6px 0;
+    padding: 0.6em 1.1em;
+    background: color-mix(in srgb, var(--aqua) 7%, transparent);
     color: var(--muted);
+}
+
+.md-content blockquote p {
+    margin: 0.35em 0;
 }
 
 .md-content hr {
     border: none;
     border-top: 1px solid var(--border);
     margin: 2.5em 0;
-}
-
-.md-content code {
-    padding: 2px 5px;
-    background-color: var(--tag-bg);
-    border-radius: 4px;
-    font-size: 0.9em;
-}
-
-.md-content pre {
-    padding: 1em;
-    margin: 1.5em 0;
-    border-radius: 10px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
-    overflow-x: auto;
-}
-
-.md-content pre code {
-    display: block; /* 消除代码块首行视觉偏移 */
-    padding: 0;
-    background: none;
-    border-radius: 0;
-    font-size: 0.9em;
 }
 
 .md-content table {
@@ -111,4 +125,77 @@
 
 .md-content th {
     background-color: var(--surface);
+}
+
+/* ===== 行内代码 ===== */
+
+.md-content code {
+    padding: 1px 6px;
+    background-color: var(--tag-bg);
+    border-radius: 5px;
+    font-size: 0.875em;
+}
+
+/* ===== 代码块 ===== */
+
+.md-content pre {
+    position: relative; /* 容纳右上角工具条 */
+    padding: 1.1em 1.4em;
+    margin: 1.5em 0;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+    overflow-x: auto;
+}
+
+.md-content pre code {
+    display: block; /* 消除代码块首行视觉偏移 */
+    padding: 0;
+    background: none;
+    border-radius: 0;
+    font-size: 0.875em;
+    line-height: 1.7;
+}
+
+/* 语言标签 + 复制按钮（由 ArticleLayout 脚本注入；代码块恒为深底，用固定浅色） */
+.code-toolbar {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.md-content pre:hover .code-toolbar,
+.code-toolbar:focus-within {
+    opacity: 1;
+}
+
+.code-lang {
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgb(228 231 236 / 0.5);
+}
+
+.code-copy {
+    cursor: pointer;
+    border: 1px solid rgb(228 231 236 / 0.2);
+    background: rgb(228 231 236 / 0.08);
+    color: rgb(228 231 236 / 0.75);
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 6px;
+    transition:
+        color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.code-copy:hover {
+    color: rgb(228 231 236 / 1);
+    border-color: rgb(228 231 236 / 0.4);
 }

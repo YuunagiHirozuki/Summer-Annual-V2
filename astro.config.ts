@@ -17,6 +17,10 @@ export default defineConfig({
         plugins: [tailwindcss()],
     },
     markdown: {
+        shikiConfig: {
+            // 深色代码块在两种站点主题下都保持可读
+            theme: 'one-dark-pro',
+        },
         rehypePlugins: [
             rehypeSlug, // 给所有标题自动添加 id
             [
