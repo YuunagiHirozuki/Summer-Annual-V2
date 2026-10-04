@@ -18,11 +18,11 @@ const visiblePosts = posts.slice(0, POSTS_PER_PAGE)
 >
     {/* 三列 grid：左右 1fr 等宽 → 内容精确居中，TAGS 恒距内容 32px */}
     <div
-        class="mx-auto grid w-full grid-cols-1 gap-8 px-4 py-8 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]"
+        class="mx-auto grid w-full grid-cols-1 gap-6 px-4 py-8 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]"
     >
         <div class="hidden xl:block" aria-hidden="true"></div>
 
-        <div class="w-full max-w-180 min-w-0">
+        <div class="mx-auto w-full max-w-180 min-w-0">
             <!-- 公告栏 -->
             <div class="mb-6 rounded-sm bg-card p-6 shadow-md">
                 <p class="text-muted">{SITE_SIGNATURE}</p>
