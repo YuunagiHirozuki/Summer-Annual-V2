@@ -1,0 +1,64 @@
+/* ============================================
+   Design Tokens —— 全站颜色只在这里定义
+   黑夜模式（默认）= V1 深色水色主题
+   白天模式 = 浅色水色主题（html[data-theme='light']）
+   ============================================ */
+
+:root {
+    color-scheme: dark;
+
+    /* 基础色 */
+    --background: #1b1e26; /* 页面背景，接近蓝黑 */
+    --surface: #252a34; /* 区块背景（About、导航条、按钮） */
+    --card: #2d323d; /* 卡片背景（文章列表、正文卡片） */
+    --border: #3a404c; /* 边框/分隔线 */
+
+    /* 文字 */
+    --ink: #e4e7ec; /* 主文字 */
+    --muted: #a2a9b6; /* 次要文字 */
+
+    /* 水色强调 */
+    --aqua: #b0e0e6;
+    --aqua-hover: #9af0de;
+    --aqua-contrast: #1b1e26; /* 放在水色块上的文字 */
+
+    --tag-bg: rgba(125, 226, 209, 0.15);
+    --selection: rgba(125, 226, 209, 0.25);
+}
+
+:root[data-theme='light'] {
+    color-scheme: light;
+
+    --background: #f4f8f9;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --border: #d9e3e7;
+
+    --ink: #1f2730;
+    --muted: #5d6b76;
+
+    /* 白底上使用更深的青色，保证对比度 */
+    --aqua: #2e8fa3;
+    --aqua-hover: #237a8c;
+    --aqua-contrast: #ffffff;
+
+    --tag-bg: rgba(46, 143, 163, 0.12);
+    --selection: rgba(46, 143, 163, 0.18);
+}
+
+/* 把 token 映射成 Tailwind 工具类（bg-background / text-ink / border-border ...）。
+   inline 模式让工具类在运行时引用上面的变量，主题切换即时生效 */
+@theme inline {
+    --color-background: var(--background);
+    --color-surface: var(--surface);
+    --color-card: var(--card);
+    --color-border: var(--border);
+    --color-ink: var(--ink);
+    --color-muted: var(--muted);
+    --color-aqua: var(--aqua);
+    --color-aqua-hover: var(--aqua-hover);
+    --color-aqua-contrast: var(--aqua-contrast);
+    --color-tag-bg: var(--tag-bg);
+
+    --font-body: 'Atkinson', ui-sans-serif, system-ui, sans-serif;
+}

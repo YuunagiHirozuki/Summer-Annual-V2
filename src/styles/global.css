@@ -1,0 +1,6 @@
+/* 全局样式入口：BaseLayout 引入一次 */
+@import 'tailwindcss';
+@import 'mono-icons/iconfont/icons.css';
+@import './tokens.css';
+@import './base.css';
+@import './prose.css';

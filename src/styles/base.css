@@ -1,0 +1,123 @@
+/* 元素默认样式：基于 token，全站共享 */
+
+@font-face {
+    font-family: 'Atkinson';
+    src: url('/fonts/atkinson-regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Atkinson';
+    src: url('/fonts/atkinson-bold.woff') format('woff');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+html {
+    @media (prefers-reduced-motion: no-preference) {
+        scroll-behavior: smooth;
+    }
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.7;
+    text-align: left;
+    color: var(--ink);
+    background-color: var(--background);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+@media (max-width: 720px) {
+    body {
+        font-size: 18px;
+    }
+}
+
+::selection {
+    background: var(--selection);
+}
+
+/* 锚点目标统一避开固定导航 */
+[id] {
+    scroll-margin-top: 5.5rem;
+}
+
+h1 {
+    font-size: 2.25em;
+}
+h2 {
+    font-size: 2em;
+}
+h3 {
+    font-size: 1.5em;
+}
+h4 {
+    font-size: 1.3em;
+}
+h5 {
+    font-size: 1.25em;
+}
+
+strong,
+b {
+    font-weight: 700;
+}
+
+textarea {
+    width: 100%;
+    font-size: 16px;
+}
+input {
+    font-size: 16px;
+}
+table {
+    width: 100%;
+}
+
+/* ===== 动画 ===== */
+
+/* 浮动动画 */
+@keyframes float {
+    0%,
+    100% {
+        transform: translate(-50%, 0);
+    }
+
+    50% {
+        transform: translate(-50%, -10px);
+    }
+}
+
+/* 呼吸动画 */
+@keyframes breathe {
+    0%,
+    100% {
+        opacity: 1;
+        filter: drop-shadow(
+            0 0 1px color-mix(in srgb, var(--aqua) 70%, transparent)
+        );
+    }
+
+    50% {
+        opacity: 0.4;
+        filter: drop-shadow(
+            0 0 1px color-mix(in srgb, var(--aqua) 40%, transparent)
+        );
+    }
+}
+
+@layer utilities {
+    .animate-float-breathe {
+        animation:
+            float 3s cubic-bezier(0.4, 0, 0.6, 1) infinite,
+            breathe 3s ease-in-out infinite;
+    }
+}
