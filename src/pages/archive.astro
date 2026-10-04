@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { getSortedPosts } from '../utils/posts'
+import { SITE_TITLE } from '../consts'
+
+const posts = await getSortedPosts()
+const years = [...new Set(posts.map((p) => p.data.pubDate.getFullYear()))]
+---
+
+<BaseLayout title={`Archive - ${SITE_TITLE}`} hero="half">
+    <div class="mx-auto w-full max-w-180 px-4 py-8">
+        <h1 class="mb-10 text-center text-3xl font-bold">Archive</h1>
+
+        {
+            years.map((year) => (
+                <section class="mb-10">
+                    <h2 class="mb-4 text-2xl font-bold text-aqua">{year}</h2>
+                    <ul class="grid gap-2">
+                        {posts
+                            .filter((p) => p.data.pubDate.getFullYear() === year)
+                            .map((post) => (
+                                <li class="rounded-sm bg-card px-4 py-3 shadow-md transition-shadow hover:shadow-lg">
+                                    <a
+                                        href={`/posts/${post.id}/`}
+                                        class="flex items-baseline justify-between gap-4 no-underline"
+                                    >
+                                        <span class="text-ink transition-colors hover:text-aqua">
+                                            {post.data.title}
+                                        </span>
+                                        <time
+                                            datetime={post.data.pubDate.toISOString()}
+                                            class="shrink-0 text-sm text-muted"
+                                        >
+                                            {post.data.pubDate.toLocaleDateString('zh-CN')}
+                                        </time>
+                                    </a>
+                                </li>
+                            ))}
+                    </ul>
+                </section>
+            ))
+        }
+    </div>
+</BaseLayout>

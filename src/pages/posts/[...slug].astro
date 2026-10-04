@@ -1,0 +1,38 @@
+---
+import { render } from 'astro:content'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import ArticleLayout from '../../layouts/ArticleLayout.astro'
+import { getSortedPosts, getAdjacentPosts, type Post } from '../../utils/posts'
+import { SITE_TITLE } from '../../consts'
+
+export async function getStaticPaths() {
+    // 草稿（draft: true）不生成页面
+    const posts = await getSortedPosts()
+    return posts.map((post) => ({
+        params: { slug: post.id },
+        props: { post },
+    }))
+}
+
+interface Props {
+    post: Post
+}
+
+const { post } = Astro.props
+const { Content } = await render(post)
+
+// 上/下篇按排好序的列表取（prev = 更新一篇，next = 更旧一篇）
+const sorted = await getSortedPosts()
+const { prev, next } = getAdjacentPosts(sorted, post)
+---
+
+<BaseLayout
+    title={`${post.data.title} - ${SITE_TITLE}`}
+    description={post.data.description}
+    hero="full"
+    heroImage={post.data.image}
+>
+    <ArticleLayout post={post} prev={prev} next={next}>
+        <Content />
+    </ArticleLayout>
+</BaseLayout>

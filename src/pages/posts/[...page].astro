@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import PostCard from '../../components/PostCard.astro'
+import Pagination from '../../components/Pagination.astro'
+import { getSortedPosts, POSTS_PER_PAGE, type Post } from '../../utils/posts'
+import { SITE_TITLE } from '../../consts'
+
+export async function getStaticPaths() {
+    const sortedPosts = await getSortedPosts()
+    const totalPages = Math.ceil(sortedPosts.length / POSTS_PER_PAGE)
+
+    // 从第二页开始生成静态路径
+    return Array.from({ length: totalPages - 1 }, (_, i) => ({
+        params: { page: String(i + 2) },
+        props: { currentPage: i + 2, totalPages, sortedPosts },
+    }))
+}
+
+interface Props {
+    currentPage: number
+    totalPages: number
+    sortedPosts: Post[]
+}
+
+const { currentPage, totalPages, sortedPosts } = Astro.props
+const visiblePosts = sortedPosts.slice(
+    (currentPage - 1) * POSTS_PER_PAGE,
+    currentPage * POSTS_PER_PAGE
+)
+---
+
+<BaseLayout title={`BLOG - ${SITE_TITLE}`} hero="full">
+    <div class="mx-auto w-full max-w-180 px-4 py-8">
+        <h2 class="mb-10 flex items-center justify-center text-2xl font-bold">
+            BLOG
+        </h2>
+
+        <div class="grid gap-6">
+            {visiblePosts.map((post) => <PostCard post={post} />)}
+        </div>
+
+        <Pagination {currentPage} {totalPages} />
+    </div>
+</BaseLayout>

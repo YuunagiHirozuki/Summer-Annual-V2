@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { SITE_TITLE } from '../consts'
+---
+
+<BaseLayout title={`Project - ${SITE_TITLE}`} hero="half">
+    <div class="mx-auto w-full max-w-180 px-4 py-8">
+        <h1 class="mb-10 text-center text-3xl font-bold">Project</h1>
+
+        <div class="rounded-sm bg-card p-6 shadow-md">
+            <p class="text-muted">施工中…… 敬请期待。</p>
+        </div>
+    </div>
+</BaseLayout>
