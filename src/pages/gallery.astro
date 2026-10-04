@@ -1,14 +1,52 @@
 ---
+import { getCollection } from 'astro:content'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { SITE_TITLE } from '../consts'
+
+const artworks = (await getCollection('gallery')).sort(
+    (a, b) =>
+        (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0)
+)
 ---
 
 <BaseLayout title={`Gallery - ${SITE_TITLE}`} hero="half">
-    <div class="mx-auto w-full max-w-180 px-4 py-8">
+    <div class="mx-auto w-full max-w-260 px-4 py-8">
         <h1 class="mb-10 text-center text-3xl font-bold">Gallery</h1>
 
-        <div class="rounded-sm bg-card p-6 shadow-md">
-            <p class="text-muted">施工中…… 敬请期待。</p>
-        </div>
+        {
+            artworks.length > 0 ? (
+                <div class="columns-1 gap-8 sm:columns-2 lg:columns-3">
+                    {artworks.map((art) => (
+                        <figure class="gallery-piece mb-8 break-inside-avoid">
+                            <div class="rounded-sm bg-surface p-3 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                                <img
+                                    src={art.data.image.src}
+                                    alt={art.data.title}
+                                    width={art.data.image.width}
+                                    height={art.data.image.height}
+                                    loading="lazy"
+                                    decoding="async"
+                                    class="w-full rounded-[2px]"
+                                />
+                                <figcaption class="px-1 pt-3 pb-1 text-center">
+                                    <span class="text-sm text-ink">
+                                        {art.data.title}
+                                    </span>
+                                    {art.data.description && (
+                                        <span class="mt-0.5 block text-xs text-muted">
+                                            {art.data.description}
+                                        </span>
+                                    )}
+                                </figcaption>
+                            </div>
+                        </figure>
+                    ))}
+                </div>
+            ) : (
+                <div class="rounded-sm bg-card p-6 shadow-md">
+                    <p class="text-muted">画廊筹备中…… 敬请期待。</p>
+                </div>
+            )
+        }
     </div>
 </BaseLayout>
