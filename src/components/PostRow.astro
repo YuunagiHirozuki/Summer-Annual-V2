@@ -9,25 +9,28 @@ interface Props {
 const { post } = Astro.props
 ---
 
-<li class="overflow-hidden rounded-sm bg-card shadow-md transition-shadow hover:shadow-lg">
+<div class="overflow-hidden rounded-sm bg-card shadow-md transition-shadow hover:shadow-lg">
     <a
         href={`/posts/${post.id}/`}
         class="flex items-center gap-4 no-underline"
     >
-        <div class="h-20 w-32 shrink-0 overflow-hidden bg-surface">
-            {
-                post.data.image && (
+        {
+            post.data.image && (
+                <div class="h-20 w-32 shrink-0 overflow-hidden">
                     <CoverImage
                         image={post.data.image}
                         alt={post.data.title}
                         width={300}
                         class="h-full w-full object-cover"
                     />
-                )
-            }
-        </div>
+                </div>
+            )
+        }
         <div
-            class="flex min-w-0 flex-1 items-baseline justify-between gap-4 py-3 pr-4"
+            class:list={[
+                'flex min-w-0 flex-1 items-baseline justify-between gap-4 pr-4',
+                post.data.image ? 'py-3' : 'py-3 pl-4',
+            ]}
         >
             <span class="truncate text-ink transition-colors hover:text-aqua">
                 {post.data.title}
@@ -40,4 +43,4 @@ const { post } = Astro.props
             </time>
         </div>
     </a>
-</li>
+</div>

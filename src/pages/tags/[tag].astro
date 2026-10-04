@@ -27,8 +27,8 @@ const { tag, posts } = Astro.props
     <div class="mx-auto w-full max-w-180 px-4 py-8">
         <h1 class="mb-10 text-center text-3xl font-bold text-aqua">#{tag}</h1>
 
-        <ul class="grid gap-2">
+        <div class="grid gap-2">
             {posts.map((post) => <PostRow post={post} />)}
-        </ul>
+        </div>
     </div>
 </BaseLayout>
