@@ -1,0 +1,58 @@
+<button
+    id="back-to-top"
+    aria-label="回到顶部"
+    class="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-surface text-2xl text-aqua opacity-0 shadow-lg transition-all duration-300 hover:bg-aqua hover:text-aqua-contrast"
+>
+    <i class="mi-chevron-up"></i>
+</button>
+
+<script>
+    let bound = false
+    let heroHeight = 400
+    let footer: Element | null = null
+
+    const marginAboveFooter = 100 // 距离 footer 的固定距离
+
+    function updateButton() {
+        const btn = document.getElementById('back-to-top')
+        if (!btn) return
+
+        const scrollY = window.scrollY
+        const winHeight = window.innerHeight
+        const footerTop = footer?.getBoundingClientRect().top ?? Infinity
+
+        // 显示/隐藏按钮
+        btn.style.opacity = scrollY > heroHeight ? '1' : '0'
+
+        const distanceToFooter = footerTop - winHeight
+
+        let offset = 0
+        if (distanceToFooter < marginAboveFooter) {
+            // 按钮上浮量 = marginAboveFooter - distanceToFooter
+            offset = (marginAboveFooter - distanceToFooter) * 0.75
+        }
+
+        btn.style.transform = `translateY(-${offset}px)`
+    }
+
+    function initBackToTop() {
+        const btn = document.getElementById('back-to-top')
+        if (!btn) return
+
+        // 每次换页重新测量
+        heroHeight = document.querySelector('#hero')?.offsetHeight ?? 400
+        footer = document.querySelector('footer')
+
+        if (!bound) {
+            bound = true
+            window.addEventListener('scroll', updateButton, { passive: true })
+            window.addEventListener('resize', updateButton)
+            btn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+            })
+        }
+        updateButton()
+    }
+
+    document.addEventListener('astro:page-load', initBackToTop)
+</script>

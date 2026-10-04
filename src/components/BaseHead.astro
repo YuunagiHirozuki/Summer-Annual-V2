@@ -1,0 +1,30 @@
+---
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts'
+
+interface Props {
+    title: string
+    description?: string
+    image?: string
+}
+
+const { title, description = SITE_DESCRIPTION, image } = Astro.props
+const canonicalURL = new URL(Astro.url.pathname, Astro.site)
+const ogImage = image ? new URL(image, Astro.site) : undefined
+---
+
+<!-- 公共 <head>：所有页面经由 BaseLayout 挂载 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalURL} />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<meta name="generator" content={Astro.generator} />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={SITE_TITLE} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalURL} />
+{ogImage && <meta property="og:image" content={ogImage} />}

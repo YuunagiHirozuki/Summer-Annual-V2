@@ -1,0 +1,80 @@
+---
+interface Props {
+    currentPage?: number
+    totalPages?: number
+}
+
+const { currentPage = 1, totalPages = 1 } = Astro.props
+
+// 计算可见页范围
+let startPage = Math.max(1, currentPage - 2)
+let endPage = Math.min(totalPages, currentPage + 2)
+
+// 若范围太小导致页数不足5个，则向两侧补足
+if (endPage - startPage < 4) {
+    if (startPage === 1) {
+        endPage = Math.min(totalPages, startPage + 4)
+    } else if (endPage === totalPages) {
+        startPage = Math.max(1, endPage - 4)
+    }
+}
+
+const visiblePages: number[] = []
+for (let i = startPage; i <= endPage; i++) visiblePages.push(i)
+
+const prevPageHref =
+    currentPage === 1
+        ? null
+        : currentPage - 1 === 1
+          ? '/'
+          : `/posts/${currentPage - 1}/`
+const nextPageHref =
+    currentPage === totalPages ? null : `/posts/${currentPage + 1}/`
+---
+
+<div class="mt-8 flex items-center justify-center space-x-2">
+    <!-- 上一页 -->
+    <a
+        href={prevPageHref}
+        aria-label="上一页"
+        class={`flex h-9 w-9 items-center justify-center rounded transition-colors duration-300 ${
+            !prevPageHref
+                ? 'pointer-events-none cursor-not-allowed bg-surface text-muted'
+                : 'bg-surface text-aqua hover:bg-aqua hover:text-aqua-contrast'
+        }`}
+    >
+        <i class="mi-chevron-left text-inherit"></i>
+    </a>
+
+    <!-- 中间页 -->
+    {
+        visiblePages.map((page) => {
+            const isCurrent = page === currentPage
+            return (
+                <a
+                    href={page === 1 ? '/' : `/posts/${page}/`}
+                    class={`flex h-9 w-9 items-center justify-center rounded transition-colors duration-300 ${
+                        isCurrent
+                            ? 'pointer-events-none cursor-default bg-aqua text-aqua-contrast'
+                            : 'bg-surface text-aqua hover:bg-aqua hover:text-aqua-contrast'
+                    }`}
+                >
+                    {page}
+                </a>
+            )
+        })
+    }
+
+    <!-- 下一页 -->
+    <a
+        href={nextPageHref}
+        aria-label="下一页"
+        class={`flex h-9 w-9 items-center justify-center rounded transition-colors duration-300 ${
+            !nextPageHref
+                ? 'pointer-events-none cursor-not-allowed bg-surface text-muted'
+                : 'bg-surface text-aqua hover:bg-aqua hover:text-aqua-contrast'
+        }`}
+    >
+        <i class="mi-chevron-right text-inherit"></i>
+    </a>
+</div>

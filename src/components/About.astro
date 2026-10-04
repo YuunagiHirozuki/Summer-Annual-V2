@@ -1,0 +1,88 @@
+---
+import AvatarImg from '../assets/avatar.png'
+import { Icon } from 'astro-icon/components'
+
+const SNS = [
+    {
+        name: 'GitHub',
+        icon: 'fa6-brands:github',
+        url: 'https://github.com/YuunagiHiroizuki',
+    },
+    {
+        name: 'Pixiv',
+        icon: 'fa6-brands:pixiv',
+        url: 'https://www.pixiv.net/users/34672478',
+    },
+    {
+        name: 'Twitter',
+        icon: 'fa6-brands:x-twitter',
+        url: 'https://x.com/YunagiHiroizuki',
+    },
+    {
+        name: 'Bilibili',
+        icon: 'fa6-brands:bilibili',
+        url: 'https://space.bilibili.com/340019589',
+    },
+    {
+        name: 'Bangumi',
+        icon: '/images/pgc_bangumi.svg',
+        url: 'https://bgm.tv/user/yuunagihiroizuk',
+    },
+]
+---
+
+<section
+    id="about"
+    class="flex flex-col items-center justify-center bg-surface p-[4em] shadow-md"
+>
+    <h2 class="flex items-center justify-center text-2xl font-bold mb-10">
+        ABOUT
+    </h2>
+
+    <div
+        class="flex w-full max-w-3xl flex-col items-center gap-8 px-6 sm:flex-row sm:items-start sm:px-8"
+    >
+        <!-- 左侧头像 -->
+        <img
+            src={AvatarImg.src}
+            alt="头像"
+            class="h-46 w-46 shrink-0 rounded-full object-cover"
+        />
+
+        <!-- 右侧文字 -->
+        <div class="flex flex-col items-center text-center sm:items-start sm:text-left">
+            <p class="mb-1 text-base font-semibold">淼月ゆうなぎ</p>
+            <p class="mb-1 text-sm leading-snug text-muted">
+                凪の海、月と夕焼の夏空が，綺麗……
+            </p>
+            <p class="mb-4 max-w-[40ch] break-words text-sm leading-snug text-muted">
+                大学牲，CS系在读。兴趣是阅读和听音乐。喜欢花花草草和天文。会一点画画
+            </p>
+            <!-- 图标 -->
+            <div class="flex space-x-3">
+                {
+                    SNS.map((s) => (
+                        <a
+                            href={s.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={s.name}
+                            class="flex h-10 w-10 items-center justify-center rounded-full text-muted transition-all duration-300 hover:bg-background hover:text-aqua"
+                        >
+                            {s.name === 'Bangumi' ? (
+                                <img src={s.icon} class="h-6 w-6" alt={s.name} />
+                            ) : (
+                                <Icon name={s.icon} width="25" height="25" />
+                            )}
+                        </a>
+                    ))
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- 对称填充 -->
+    <h2 class="mb-10 invisible flex items-center justify-center text-2xl font-bold">
+        ABOUT
+    </h2>
+</section>

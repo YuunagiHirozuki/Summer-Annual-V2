@@ -1,0 +1,76 @@
+<aside
+    id="toc-card"
+    class="hidden max-h-[calc(100vh-8rem)] w-72 shrink-0 self-start overflow-auto rounded-sm bg-surface p-4 text-sm shadow-lg xl:sticky xl:top-24 xl:block"
+>
+    <nav aria-label="Table of contents">
+        <ul id="toc-list" class="toc-list space-y-1"></ul>
+    </nav>
+</aside>
+
+<style is:global>
+    /* 目录条目由脚本在运行时创建，需用全局样式 */
+    .toc-list li[data-level='3'] {
+        margin-left: 0.75rem;
+    }
+    .toc-list li[data-level='4'] {
+        margin-left: 1.5rem;
+    }
+    .toc-list li[data-level='5'] {
+        margin-left: 2.25rem;
+    }
+
+    .toc-list a {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--muted);
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .toc-list a:hover {
+        color: var(--aqua);
+    }
+</style>
+
+<script>
+    function initTOC() {
+        const toc = document.getElementById('toc-card')
+        const tocList = document.getElementById('toc-list')
+        const article = document.querySelector('article')
+        const content = article?.querySelector('.md-content')
+
+        if (!toc || !tocList || !content) return
+
+        // 只收录正文里的标题，避免把 Comments 等界面标题算进目录
+        const headings = Array.from(
+            content.querySelectorAll('h2, h3, h4, h5')
+        )
+
+        // 防止客户端导航重复生成
+        tocList.innerHTML = ''
+
+        // 没有标题时隐藏整个 TOC
+        if (headings.length === 0) {
+            toc.classList.add('hidden')
+            toc.classList.remove('xl:block')
+            return
+        }
+        toc.classList.remove('hidden')
+        toc.classList.add('xl:block')
+
+        for (const [i, heading] of headings.entries()) {
+            if (!heading.id) heading.id = `heading-${i}`
+            const li = document.createElement('li')
+            li.dataset.level = String(Number(heading.tagName[1]))
+            const a = document.createElement('a')
+            a.href = `#${heading.id}`
+            a.textContent = heading.textContent ?? ''
+            li.appendChild(a)
+            tocList.appendChild(li)
+        }
+    }
+
+    document.addEventListener('astro:page-load', initTOC)
+</script>
