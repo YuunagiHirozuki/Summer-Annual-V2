@@ -16,8 +16,11 @@ const visiblePosts = posts.slice(0, POSTS_PER_PAGE)
     description={SITE_DESCRIPTION}
     hero="full"
 >
-    <div class="mx-auto flex w-full justify-center gap-8 px-4 py-8">
-        <div class="w-full max-w-200">
+    {/* 左占位与右侧 TAGS 同宽，让中间内容精确居中 */}
+    <div class="flex items-start gap-8 px-4 py-8">
+        <div class="hidden w-72 shrink-0 xl:block" aria-hidden="true"></div>
+
+        <div class="mx-auto w-full max-w-200 min-w-0">
             <!-- 公告栏 -->
             <div class="mb-6 rounded-sm bg-card p-6 shadow-md">
                 <p class="text-muted">{SITE_SIGNATURE}</p>
