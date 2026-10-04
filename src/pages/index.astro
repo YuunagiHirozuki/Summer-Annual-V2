@@ -24,9 +24,7 @@ const visiblePosts = posts.slice(0, POSTS_PER_PAGE)
             </div>
 
             <div class="grid gap-6">
-                {visiblePosts.map((post, i) => (
-                    <PostCard post={post} index={i} />
-                ))}
+                {visiblePosts.map((post) => <PostCard post={post} />)}
             </div>
 
             <Pagination currentPage={1} totalPages={totalPages} />

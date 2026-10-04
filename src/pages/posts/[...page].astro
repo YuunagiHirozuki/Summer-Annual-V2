@@ -38,9 +38,7 @@ const visiblePosts = sortedPosts.slice(
             </h2>
 
             <div class="grid gap-6">
-                {visiblePosts.map((post, i) => (
-                    <PostCard post={post} index={i} />
-                ))}
+                {visiblePosts.map((post) => <PostCard post={post} />)}
             </div>
 
             <Pagination {currentPage} {totalPages} />
