@@ -1,5 +1,5 @@
 ---
-import { Image } from 'astro:assets'
+import CoverImage from '../components/CoverImage.astro'
 import TOC from '../components/TOC.astro'
 import { postCoverSrc, type Post } from '../utils/posts'
 
@@ -23,25 +23,13 @@ const cover = postCoverSrc(post)
             {
                 cover && (
                     <div class="relative aspect-[16/9] w-full overflow-hidden">
-                        {typeof rawImage === 'string' ? (
-                            <img
-                                src={cover}
-                                alt={title}
-                                loading="lazy"
-                                decoding="async"
-                                class="h-full w-full object-cover"
-                            />
-                        ) : (
-                            <Image
-                                src={rawImage}
-                                alt={title}
-                                width={1380}
-                                format="webp"
-                                loading="lazy"
-                                decoding="async"
-                                class="h-full w-full object-cover"
-                            />
-                        )}
+                        <CoverImage
+                            image={rawImage}
+                            alt={title}
+                            width={1380}
+                            loading="eager"
+                            class="h-full w-full object-cover"
+                        />
                     </div>
                 )
             }

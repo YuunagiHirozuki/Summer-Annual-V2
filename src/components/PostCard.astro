@@ -1,5 +1,5 @@
 ---
-import { Image } from 'astro:assets'
+import CoverImage from './CoverImage.astro'
 import { type Post } from '../utils/posts'
 
 interface Props {
@@ -24,23 +24,12 @@ const raw = post.data.image
     {
         raw && (
             <div class="h-44 w-full shrink-0 overflow-hidden sm:h-44 sm:w-2/5">
-                {typeof raw === 'string' ? (
-                    <img
-                        src={raw}
-                        alt={post.data.title}
-                        loading="lazy"
-                        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                ) : (
-                    <Image
-                        src={raw}
-                        alt={post.data.title}
-                        width={800}
-                        format="webp"
-                        loading="lazy"
-                        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                )}
+                <CoverImage
+                    image={raw}
+                    alt={post.data.title}
+                    width={800}
+                    class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
             </div>
         )
     }

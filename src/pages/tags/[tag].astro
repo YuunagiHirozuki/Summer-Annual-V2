@@ -1,4 +1,5 @@
 ---
+import CoverImage from '../../components/CoverImage.astro'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { getSortedPosts, getTagCounts, type Post } from '../../utils/posts'
 import { SITE_TITLE } from '../../consts'
@@ -29,20 +30,32 @@ const { tag, posts } = Astro.props
         <ul class="grid gap-2">
             {
                 posts.map((post) => (
-                    <li class="rounded-sm bg-card px-4 py-3 shadow-md transition-shadow hover:shadow-lg">
+                    <li class="overflow-hidden rounded-sm bg-card shadow-md transition-shadow hover:shadow-lg">
                         <a
                             href={`/posts/${post.id}/`}
-                            class="flex items-baseline justify-between gap-4 no-underline"
+                            class="flex items-center gap-4 no-underline"
                         >
-                            <span class="text-ink transition-colors hover:text-aqua">
-                                {post.data.title}
-                            </span>
-                            <time
-                                datetime={post.data.pubDate.toISOString()}
-                                class="shrink-0 text-sm text-muted"
-                            >
-                                {post.data.pubDate.toLocaleDateString('zh-CN')}
-                            </time>
+                            {post.data.image && (
+                                <div class="h-20 w-32 shrink-0 overflow-hidden">
+                                    <CoverImage
+                                        image={post.data.image}
+                                        alt={post.data.title}
+                                        width={300}
+                                        class="h-full w-full object-cover"
+                                    />
+                                </div>
+                            )}
+                            <div class="flex min-w-0 flex-1 items-baseline justify-between gap-4 py-3 pr-4">
+                                <span class="truncate text-ink transition-colors hover:text-aqua">
+                                    {post.data.title}
+                                </span>
+                                <time
+                                    datetime={post.data.pubDate.toISOString()}
+                                    class="shrink-0 text-sm text-muted"
+                                >
+                                    {post.data.pubDate.toLocaleDateString('zh-CN')}
+                                </time>
+                            </div>
                         </a>
                     </li>
                 ))
