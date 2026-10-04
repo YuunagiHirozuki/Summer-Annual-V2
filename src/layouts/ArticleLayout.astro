@@ -146,12 +146,12 @@ const cover = postCoverSrc(post)
             btn.addEventListener('click', async () => {
                 try {
                     await navigator.clipboard.writeText(code?.innerText ?? '')
-                    btn.textContent = '已复制'
+                    btn.textContent = 'Copied'
                 } catch {
-                    btn.textContent = '复制失败'
+                    btn.textContent = 'Copy Failed'
                 }
                 setTimeout(() => {
-                    btn.textContent = '复制'
+                    btn.textContent = 'Copy'
                 }, 1500)
             })
             toolbar.appendChild(btn)

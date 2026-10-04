@@ -7,19 +7,17 @@ const tags = getTagCounts(posts)
 
 {
     tags.length > 0 && (
-        <aside class="hidden w-72 shrink-0 self-start rounded-sm bg-surface p-4 text-sm shadow-lg xl:sticky xl:top-24 xl:block">
-            <h2 class="mb-2 text-base font-semibold">TAGS</h2>
-            <ul class="space-y-1">
+        <aside class="hidden w-72 shrink-0 self-start rounded-sm bg-surface p-4 shadow-lg xl:sticky xl:top-24 xl:block">
+            <h2 class="mb-3 text-base font-semibold">TAGS</h2>
+            <ul class="flex flex-wrap gap-2">
                 {tags.map(([tag, count]) => (
                     <li>
                         <a
                             href={`/tags/${encodeURIComponent(tag)}/`}
-                            class="flex items-baseline justify-between gap-3 rounded px-2 py-1 no-underline transition-colors hover:text-aqua"
+                            class="flex items-baseline gap-1.5 rounded-full bg-tag-bg px-3 py-1 no-underline transition-colors duration-300 hover:text-aqua"
                         >
-                            <span class="truncate">#{tag}</span>
-                            <span class="shrink-0 text-xs text-muted">
-                                {count}
-                            </span>
+                            <span class="text-sm text-ink">#{tag}</span>
+                            <span class="text-xs text-muted">{count}</span>
                         </a>
                     </li>
                 ))}
