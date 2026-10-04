@@ -58,24 +58,11 @@ scripts/
 | `CLOUDFLARE_API_TOKEN` | Cloudflare API Token（Pages Edit 权限） |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare Account ID |
 
-文章仓库如需「推送即更新网站」，在其 `.github/workflows/` 加：
-
-```yaml
-name: Notify website rebuild
-on: push
-jobs:
-    dispatch:
-        runs-on: ubuntu-latest
-        steps:
-            - run: |
-                curl -X POST \
-                  -H "Authorization: Bearer ${{ secrets.SITE_REPO_TOKEN }}" \
-                  -H "Accept: application/vnd.github+json" \
-                  https://api.github.com/repos/YuunagiHirozuki/Summer-Annual-V2/dispatches \
-                  -d '{"event_type":"content-update"}'
-```
-
-（`SITE_REPO_TOKEN` 存在文章仓库的 Secrets 里，是对网站仓库有 Actions 写权限的 PAT。）
-不配置也不影响：网站仓库支持手动 workflow_dispatch，且网站推送总会触发构建。
+文章仓库已配置「push 即更新网站」：其 `.github/workflows/notify-site.yml`
+会向本仓库发 `repository_dispatch`（event_type: `content-update`）。
+它需要把一个 PAT 存到**文章仓库**的 Secrets：`SITE_REPO_TOKEN` ——
+对 Summer-Annual-V2 有 **Contents: Read and write** 权限的 fine-grained
+token（`repository_dispatch` 要求 contents:write）。未配置前该 workflow
+会失败，不影响网站正常构建。
 
 [Summer-Annual-Blog-Article]: https://github.com/YuunagiHirozuki/-Summer-Annual-Blog-Article
