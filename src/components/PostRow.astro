@@ -1,6 +1,5 @@
 ---
 import CoverImage from './CoverImage.astro'
-import { Icon } from 'astro-icon/components'
 import type { Post } from '../utils/posts'
 
 interface Props {
@@ -17,19 +16,13 @@ const { post } = Astro.props
     >
         <div class="h-20 w-32 shrink-0 overflow-hidden bg-surface">
             {
-                post.data.image ? (
+                post.data.image && (
                     <CoverImage
                         image={post.data.image}
                         alt={post.data.title}
                         width={300}
                         class="h-full w-full object-cover"
                     />
-                ) : (
-                    <div
-                        class="flex h-full w-full items-center justify-center text-muted opacity-60"
-                    >
-                        <Icon name="mdi:image-off" class="text-xl" />
-                    </div>
                 )
             }
         </div>
