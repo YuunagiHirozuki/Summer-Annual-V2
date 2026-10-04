@@ -16,6 +16,9 @@ on:
     push:
         branches: [main]
     workflow_dispatch:
+    # 每日自动重建的唯一用途：只在 R2 面板传画廊图时刷新网站
+    # schedule:
+    #     - cron: '0 21 * * *' # 北京时间 05:00
     repository_dispatch:
         types: [content-update] # 文章仓库推送后触发（见 README）
 
