@@ -1,0 +1,36 @@
+---
+import { getSortedPosts, getCategories } from '../../utils/posts'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import PostRow from '../../components/PostRow.astro'
+import { SITE_TITLE } from '../../consts'
+
+export async function getStaticPaths() {
+    const posts = await getSortedPosts()
+    return getCategories(posts).map(([category]) => ({
+        params: { category },
+        props: {
+            category,
+            posts: posts.filter((p) => p.data.categories === category),
+        },
+    }))
+}
+
+interface Props {
+    category: string
+    posts: Post[]
+}
+
+const { category, posts } = Astro.props
+---
+
+<BaseLayout title={`${category} - ${SITE_TITLE}`} hero="half">
+    <div class="mx-auto w-full max-w-180 px-4 py-8">
+        <h1 class="mb-10 text-center text-3xl font-bold text-aqua">
+            {category}
+        </h1>
+
+        <div class="grid gap-2">
+            {posts.map((post) => <PostRow post={post} />)}
+        </div>
+    </div>
+</BaseLayout>

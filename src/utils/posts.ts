@@ -45,3 +45,16 @@ export function getTagCounts(posts: Post[]): [string, number][] {
         (a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh')
     )
 }
+
+/** 汇总分类（categories 字段）出现次数：按次数降序，同次数按名称排序 */
+export function getCategories(posts: Post[]): [string, number][] {
+    const counts = new Map<string, number>()
+    for (const post of posts) {
+        const cat = post.data.categories
+        if (!cat) continue
+        counts.set(cat, (counts.get(cat) ?? 0) + 1)
+    }
+    return [...counts.entries()].sort(
+        (a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh')
+    )
+}

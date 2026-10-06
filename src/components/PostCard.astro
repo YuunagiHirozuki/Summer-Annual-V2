@@ -32,6 +32,12 @@ const raw = post.data.image
         <h3
             class="mb-2 text-2xl font-bold transition-colors duration-300 group-hover:text-aqua"
         >
+            {post.data.pinned && (
+                <i
+                    class="mi-pin mr-2 inline-block align-middle text-aqua"
+                    title="置顶"
+                />
+            )}
             {post.data.title}
         </h3>
         <p class="mb-2 text-sm opacity-70">
@@ -45,9 +51,12 @@ const raw = post.data.image
             post.data.tags && (
                 <div class="mt-3 flex flex-wrap gap-2 text-sm">
                     {post.data.tags.map((tag: string) => (
-                        <span class="rounded-md bg-tag-bg px-2 py-1 opacity-80 transition-colors duration-300 hover:text-aqua">
+                        <a
+                            href={`/tags/${encodeURIComponent(tag)}/`}
+                            class="rounded-md bg-tag-bg px-2 py-1 no-underline opacity-80 transition-colors duration-300 hover:text-aqua"
+                        >
                             #{tag}
-                        </span>
+                        </a>
                     ))}
                 </div>
             )

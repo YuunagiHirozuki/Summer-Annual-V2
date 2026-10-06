@@ -1,0 +1,30 @@
+---
+import { getSortedPosts, getCategories } from '../utils/posts'
+
+const posts = await getSortedPosts()
+const categories = getCategories(posts)
+---
+
+{
+    categories.length > 0 && (
+        <section class="rounded-sm bg-surface p-4 shadow-xs">
+            <h2 class="mb-3 text-base font-semibold">COLLECTION</h2>
+            <ul class="space-y-1">
+                {categories.map(([cat, count]) => (
+                    <li>
+                        <a
+                            href={`/categories/${encodeURIComponent(cat)}/`}
+                            class="flex items-center gap-2 rounded px-2 py-1 no-underline transition-colors hover:text-aqua"
+                        >
+                            <i class="mi-folder text-base" />
+                            <span class="truncate">{cat}</span>
+                            <span class="ml-auto text-xs text-muted">
+                                {count}
+                            </span>
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </section>
+    )
+}

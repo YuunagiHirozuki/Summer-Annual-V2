@@ -137,12 +137,50 @@
 }
 
 /* ===== 代码块 ===== */
+/* 外壳（.code-block）承载边框圆角；顶栏（.code-header）单独一行放
+   语言标签和复制 icon，由 ArticleLayout 脚本注入 */
 
-.md-content pre {
-    position: relative; /* 容纳右上角工具条 */
-    padding: 1.1em 1.4em;
+.md-content .code-block {
     margin: 1.5em 0;
+    border: 1px solid var(--border);
     border-radius: 16px;
+    overflow: hidden;
+}
+
+.md-content .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 16px;
+    background-color: #21252b; /* one-dark-pro 同族深色，两种主题下恒定 */
+    color: rgb(228 231 236 / 0.5);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.code-copy {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    border: none;
+    background: none;
+    padding: 0;
+    color: rgb(228 231 236 / 0.55);
+    font-size: 0.95rem;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.code-copy:hover {
+    color: rgb(228 231 236 / 1);
+}
+
+.md-content .code-block pre {
+    padding: 1.1em 1.4em;
+    margin: 0;
+    border: none;
+    border-radius: 0;
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
     overflow-x: auto;
@@ -157,44 +195,8 @@
     line-height: 1.7;
 }
 
-/* 语言标签 + 复制按钮（由 ArticleLayout 脚本注入；代码块恒为深底，用固定浅色） */
-.code-toolbar {
-    position: absolute;
-    top: 0.55rem;
-    right: 0.7rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-.md-content pre:hover .code-toolbar,
-.code-toolbar:focus-within {
-    opacity: 1;
-}
-
-.code-lang {
-    font-size: 0.72rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: rgb(228 231 236 / 0.5);
-}
-
-.code-copy {
-    cursor: pointer;
-    border: 1px solid rgb(228 231 236 / 0.2);
-    background: rgb(228 231 236 / 0.08);
-    color: rgb(228 231 236 / 0.75);
-    font-size: 0.72rem;
-    padding: 2px 8px;
-    border-radius: 6px;
-    transition:
-        color 0.2s ease,
-        border-color 0.2s ease;
-}
-
-.code-copy:hover {
-    color: rgb(228 231 236 / 1);
-    border-color: rgb(228 231 236 / 0.4);
+/* 没有 .code-block 外壳的裸 pre（脚本未运行时的兜底样式） */
+.md-content pre:not(.code-block pre) {
+    margin: 1.5em 0;
+    border-radius: 16px;
 }

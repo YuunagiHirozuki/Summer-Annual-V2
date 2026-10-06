@@ -7,7 +7,7 @@ const tags = getTagCounts(posts)
 
 {
     tags.length > 0 && (
-        <aside class="hidden w-72 shrink-0 self-start rounded-sm bg-surface p-4 shadow-xs xl:sticky xl:top-24 xl:block">
+        <section class="rounded-sm bg-surface p-4 shadow-xs">
             <h2 class="mb-3 text-base font-semibold">TAGS</h2>
             <ul class="flex flex-wrap gap-2">
                 {tags.map(([tag, count]) => (
@@ -22,6 +22,6 @@ const tags = getTagCounts(posts)
                     </li>
                 ))}
             </ul>
-        </aside>
+        </section>
     )
 }

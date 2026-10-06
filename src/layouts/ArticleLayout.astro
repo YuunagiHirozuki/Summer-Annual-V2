@@ -66,9 +66,12 @@ const cover = postCoverSrc(post)
                     tags && tags.length > 0 && (
                         <div class="mt-10 flex flex-wrap gap-2 border-t border-border pt-6">
                             {tags.map((tag: string) => (
-                                <span class="rounded-full bg-tag-bg px-3 py-1 text-sm text-muted">
+                                <a
+                                    href={`/tags/${encodeURIComponent(tag)}/`}
+                                    class="rounded-full bg-tag-bg px-3 py-1 text-sm text-muted no-underline transition-colors hover:text-aqua"
+                                >
                                     #{tag}
-                                </span>
+                                </a>
                             ))}
                         </div>
                     )
@@ -101,7 +104,7 @@ const cover = postCoverSrc(post)
                 }
 
                 <div
-                    class="flex min-h-12 items-center justify-self-center self-stretch border-x border-border px-4"
+                    class="flex min-h-12 items-center justify-self-center self-stretch border-x border-border px-12"
                 >
                     <a
                         href="/"
@@ -132,47 +135,179 @@ const cover = postCoverSrc(post)
 </div>
 
 <script>
-    // 代码块工具条：语言标签 + 复制按钮（hover 浮现，样式在 prose.css）
-    function initCodeToolbars() {
+    // 代码块：语言标签单独占顶栏一行，右侧复制按钮为 icon
+    function initCodeBlocks() {
         document.querySelectorAll('.md-content pre').forEach((pre) => {
             if (pre.dataset.toolbar) return
             pre.dataset.toolbar = '1'
-
-            const toolbar = document.createElement('div')
-            toolbar.className = 'code-toolbar'
 
             const code = pre.querySelector('code')
             const lang =
                 pre.getAttribute('data-language') ||
                 code?.className.match(/language-([\w-]+)/)?.[1] ||
                 ''
-            if (lang) {
-                const label = document.createElement('span')
-                label.className = 'code-lang'
-                label.textContent = lang
-                toolbar.appendChild(label)
-            }
+
+            // 外壳：顶栏（语言 + 复制 icon）+ 代码
+            const wrapper = document.createElement('div')
+            wrapper.className = 'code-block'
+
+            const header = document.createElement('div')
+            header.className = 'code-header'
+
+            const label = document.createElement('span')
+            label.className = 'code-lang'
+            label.textContent = lang
+            header.appendChild(label)
 
             const btn = document.createElement('button')
             btn.type = 'button'
             btn.className = 'code-copy'
-            btn.textContent = 'copy'
+            btn.setAttribute('aria-label', '复制代码')
+            btn.innerHTML = '<i class="mi-copy"></i>'
             btn.addEventListener('click', async () => {
                 try {
                     await navigator.clipboard.writeText(code?.innerText ?? '')
-                    btn.textContent = 'Copied'
+                    btn.innerHTML = '<i class="mi-check"></i>'
                 } catch {
-                    btn.textContent = 'Copy Failed'
+                    // 失败图标可自行替换（当前为 warning）
+                    btn.innerHTML = '<i class="mi-warning"></i>'
                 }
                 setTimeout(() => {
-                    btn.textContent = 'Copy'
+                    btn.innerHTML = '<i class="mi-copy"></i>'
                 }, 1500)
             })
-            toolbar.appendChild(btn)
+            header.appendChild(btn)
 
-            pre.appendChild(toolbar)
+            pre.replaceWith(wrapper)
+            wrapper.appendChild(header)
+            wrapper.appendChild(pre)
         })
     }
 
-    document.addEventListener('astro:page-load', initCodeToolbars)
+    // ===== 文章图片 lightbox：点图全屏，点任意处关闭，左右切换 =====
+    let lightboxIndex = 0
+    let lightboxImages: HTMLImageElement[] = []
+
+    function openLightbox(index: number) {
+        const overlay = document.getElementById('lightbox')
+        const target = document.getElementById('lightbox-img')
+        if (!overlay || !target || lightboxImages.length === 0) return
+        lightboxIndex = (index + lightboxImages.length) % lightboxImages.length
+        const source = lightboxImages[lightboxIndex]
+        target.src = source.currentSrc || source.src
+        target.alt = source.alt
+        overlay.hidden = false
+    }
+
+    function closeLightbox() {
+        const overlay = document.getElementById('lightbox')
+        if (overlay) overlay.hidden = true
+    }
+
+    function initLightbox() {
+        lightboxImages = [
+            ...document.querySelectorAll<HTMLImageElement>('.md-content img'),
+        ]
+
+        let overlay = document.getElementById('lightbox')
+        if (!overlay) {
+            overlay = document.createElement('div')
+            overlay.id = 'lightbox'
+            overlay.hidden = true
+            overlay.innerHTML = `
+                <button type="button" class="lb-btn lb-prev" aria-label="上一张">
+                    <i class="mi-chevron-left"></i>
+                </button>
+                <img id="lightbox-img" alt="" />
+                <button type="button" class="lb-btn lb-next" aria-label="下一张">
+                    <i class="mi-chevron-right"></i>
+                </button>`
+            document.body.appendChild(overlay)
+
+            // 点任意处关闭；切换按钮不冒泡
+            overlay.addEventListener('click', closeLightbox)
+            for (const sel of ['.lb-prev', '.lb-next']) {
+                overlay.querySelector(sel)?.addEventListener('click', (e) => {
+                    e.stopPropagation()
+                    const dir = sel === '.lb-prev' ? -1 : 1
+                    openLightbox(lightboxIndex + dir)
+                })
+            }
+            document.addEventListener('keydown', (e) => {
+                if (overlay?.hidden) return
+                if (e.key === 'Escape') closeLightbox()
+                if (e.key === 'ArrowLeft') openLightbox(lightboxIndex - 1)
+                if (e.key === 'ArrowRight') openLightbox(lightboxIndex + 1)
+            })
+        }
+
+        for (const img of lightboxImages) {
+            if (img.dataset.lightbox) continue
+            img.dataset.lightbox = '1'
+            img.classList.add('lightboxable')
+            img.addEventListener('click', () =>
+                openLightbox(lightboxImages.indexOf(img))
+            )
+        }
+    }
+
+    document.addEventListener('astro:page-load', () => {
+        initCodeBlocks()
+        initLightbox()
+    })
 </script>
+
+<style is:global>
+    /* lightbox：点图全屏预览 */
+    #lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgb(0 0 0 / 0.9);
+        cursor: zoom-out;
+    }
+
+    #lightbox[hidden] {
+        display: none;
+    }
+
+    #lightbox img {
+        max-width: 92vw;
+        max-height: 92vh;
+        object-fit: contain;
+        cursor: default;
+    }
+
+    #lightbox .lb-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border: none;
+        border-radius: 50%;
+        background: rgb(255 255 255 / 0.12);
+        color: #fff;
+        font-size: 1.4rem;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    #lightbox .lb-btn:hover {
+        background: rgb(255 255 255 / 0.28);
+    }
+
+    #lightbox .lb-prev {
+        left: 16px;
+    }
+
+    #lightbox .lb-next {
+        right: 16px;
+    }
+</style>

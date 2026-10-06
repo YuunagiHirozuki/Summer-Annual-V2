@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import PostCard from '../../components/PostCard.astro'
 import Pagination from '../../components/Pagination.astro'
 import TagWidget from '../../components/TagWidget.astro'
+import CollectionWidget from '../../components/CollectionWidget.astro'
 import { getSortedPosts, POSTS_PER_PAGE, type Post } from '../../utils/posts'
 import { SITE_TITLE } from '../../consts'
 
@@ -49,6 +50,10 @@ const visiblePosts = sortedPosts.slice(
             <Pagination {currentPage} {totalPages} />
         </div>
 
-        <TagWidget />
+        {/* 侧栏列：TAGS + COLLECTION 竖排，仅 xl 屏显示并吸附 */}
+        <div class="hidden w-72 shrink-0 self-start flex-col gap-4 xl:sticky xl:top-24 xl:flex">
+            <TagWidget />
+            <CollectionWidget />
+        </div>
     </div>
 </BaseLayout>
