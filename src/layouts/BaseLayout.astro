@@ -72,26 +72,39 @@ const { title, description, hero = 'half', heroImage } = Astro.props
 
     let lightbox: PhotoSwipeLightbox | undefined
 
-    /** 给图片补 PhotoSwipe 需要的 data 属性（src + 尺寸） */
+    /** 把图片包进带 PhotoSwipe 数据属性的 <a>（官方推荐模式），
+        并禁用原生拖拽——拖拽会吞掉 click，导致鼠标点击无反应 */
     function prepareImages(scope: ParentNode) {
         for (const img of scope.querySelectorAll<HTMLImageElement>(
             '.md-content img, .gallery-grid img'
         )) {
-            if (img.dataset.pswpSrc) continue
-            img.dataset.pswpSrc = img.currentSrc || img.src
-            const w = img.getAttribute('width') ?? (img.complete ? String(img.naturalWidth) : '')
-            const h = img.getAttribute('height') ?? (img.complete ? String(img.naturalHeight) : '')
-            if (w) img.dataset.pswpWidth = w
-            if (h) img.dataset.pswpHeight = h
-            if (!img.complete) {
-                img.addEventListener(
-                    'load',
-                    () => {
-                        img.dataset.pswpWidth = String(img.naturalWidth)
-                        img.dataset.pswpHeight = String(img.naturalHeight)
-                    },
-                    { once: true }
+            if (img.dataset.pswpBound) continue
+            img.dataset.pswpBound = '1'
+            img.draggable = false
+
+            const setDims = () => {
+                const anchor = img.parentElement
+                if (!anchor || anchor.tagName !== 'A') return
+                anchor.dataset.pswpWidth = String(
+                    Number(img.getAttribute('width')) || img.naturalWidth || 0
                 )
+                anchor.dataset.pswpHeight = String(
+                    Number(img.getAttribute('height')) || img.naturalHeight || 0
+                )
+                anchor.dataset.pswpSrc = anchor.href
+            }
+
+            let anchor = img.parentElement
+            if (!anchor || anchor.tagName !== 'A') {
+                anchor = document.createElement('a')
+                anchor.href = img.currentSrc || img.src
+                img.replaceWith(anchor)
+                anchor.appendChild(img)
+            }
+            anchor.dataset.pswpSrc = anchor.href
+            setDims()
+            if (!img.complete) {
+                img.addEventListener('load', setDims, { once: true })
             }
         }
     }
@@ -103,11 +116,13 @@ const { title, description, hero = 'half', heroImage } = Astro.props
         lightbox?.destroy()
         lightbox = new PhotoSwipeLightbox({
             gallery: '.md-content, .gallery-grid',
-            children: 'img',
+            children: 'a[data-pswp-src]',
             showHideAnimationType: 'fade',
             pswpModule: () => import('photoswipe'),
         })
         lightbox.init()
+        // 调试句柄
+        window.__pswpLB = lightbox
     }
 
     document.addEventListener('astro:page-load', initLightbox)

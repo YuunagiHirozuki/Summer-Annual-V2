@@ -162,14 +162,13 @@ const cover = postCoverSrc(post)
             const btn = document.createElement('button')
             btn.type = 'button'
             btn.className = 'code-copy'
-            btn.setAttribute('aria-label', '复制代码')
+            btn.setAttribute('aria-label', '复制')
             btn.innerHTML = '<i class="mi-copy"></i>'
             btn.addEventListener('click', async () => {
                 try {
                     await navigator.clipboard.writeText(code?.innerText ?? '')
                     btn.innerHTML = '<i class="mi-check"></i>'
                 } catch {
-                    // 失败图标可自行替换（当前为 warning）
                     btn.innerHTML = '<i class="mi-warning"></i>'
                 }
                 setTimeout(() => {

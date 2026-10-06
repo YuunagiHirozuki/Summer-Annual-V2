@@ -12,13 +12,22 @@ const artworks = await getGalleryImages()
             artworks.length > 0 ? (
                 <div class="gallery-grid columns-1 gap-8 sm:columns-2 lg:columns-3">
                     {artworks.map((art) => (
-                        <img
-                            src={art.src}
-                            alt={art.alt}
-                            loading="lazy"
-                            decoding="async"
-                            class="mb-8 w-full break-inside-avoid"
-                        />
+                        <a
+                            href={art.src}
+                            data-pswp-src={art.src}
+                            data-pswp-width={art.width}
+                            data-pswp-height={art.height}
+                            class="mb-8 block break-inside-avoid"
+                        >
+                            <img
+                                src={art.src}
+                                alt={art.alt}
+                                loading="lazy"
+                                decoding="async"
+                                draggable="false"
+                                class="w-full"
+                            />
+                        </a>
                     ))}
                 </div>
             ) : (
