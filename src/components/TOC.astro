@@ -19,6 +19,14 @@
         margin-left: 2.25rem;
     }
 
+    /* 目录过长时内部滚动，但不显示滚动条（配合自动滚动到高亮条目） */
+    #toc-card {
+        scrollbar-width: none;
+    }
+    #toc-card::-webkit-scrollbar {
+        display: none;
+    }
+
     .toc-list a {
         display: block;
         overflow: hidden;
@@ -118,6 +126,22 @@
                 'toc-active',
                 !!current && a.getAttribute('href') === `#${current.id}`
             )
+        }
+
+        // 高亮条目跟随滚动进入目录可视区。
+        // 不用 scrollIntoView：sticky 容器内浏览器对它的滚动计算不可靠，
+        // 手动调整目录自身的 scrollTop
+        const active = tocList.querySelector<HTMLAnchorElement>('a.toc-active')
+        const tocCard = document.getElementById('toc-card')
+        if (active && tocCard) {
+            const top = active.offsetTop
+            const view = tocCard.scrollTop
+            const viewHeight = tocCard.clientHeight
+            if (top < view + 8) {
+                tocCard.scrollTop = top - 8
+            } else if (top + active.offsetHeight > view + viewHeight - 8) {
+                tocCard.scrollTop = top + active.offsetHeight - viewHeight + 8
+            }
         }
     }
 
