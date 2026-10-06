@@ -150,8 +150,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 6px 16px;
-    background-color: #21252b; /* one-dark-pro 同族深色，两种主题下恒定 */
+    padding: 6px 16px 0px 16px;
+    background-color: #282c34;
     color: rgb(228 231 236 / 0.5);
     font-size: 0.72rem;
     letter-spacing: 0.05em;
@@ -176,7 +176,7 @@
 }
 
 .md-content .code-block pre {
-    padding: 1.1em 1.4em;
+    padding: 0em 1.4em 1.6em 1.4em;
     margin: 0;
     border: none;
     border-radius: 0;
