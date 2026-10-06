@@ -2,7 +2,7 @@
 
 ```mermaid
 flowchart LR
-    OBS["Obsidian<br/>本地写作 + 粘贴图片"] -->|"git push / 网页拖拽"| REPO["文章仓库（私有）<br/>-Summer-Annual-Blog-Article<br/>posts/&lt;slug&gt;/index.md"]
+    OBS["Obsidian<br/>本地写作"] -->|"git push / 网页拖拽"| REPO["文章仓库（私有）<br/>-Summer-Annual-Blog-Article<br/>posts/&lt;slug&gt;/index.md"]
     YOU["你"] -->|"面板拖拽上传"| R2["Cloudflare R2<br/>bucket: gallery/*.png|jpg"]
 
     subgraph actions["GitHub Actions（网站仓库 Summer-Annual-V2）"]

@@ -49,7 +49,7 @@ const { title, description, hero = 'half', heroImage } = Astro.props
             hero === 'full' ? (
                 <Hero />
             ) : hero === 'half' ? (
-                <HalfHero image={heroImage ?? '/images/halfcover.png'} />
+                <HalfHero image={heroImage ?? '/src/assets/images/halfcover.png'} />
             ) : null
         }
 

@@ -3,7 +3,7 @@
 个人网站：Astro 5 + Tailwind CSS 4 + TypeScript，部署到 Cloudflare Pages。
 文章源文件放在私有仓库 [Summer-Annual-Blog-Article]，构建时自动导入。
 
-> TODO: 加个网站留言板功能,放在About上面，侧边的小组件栏放置文件夹(分类)栏，把主背景改成嵌入不随滚动移动的纯背景效果
+> TODO: 修改文章列表的时间日期格式、加个网站留言板功能,放在About上面，侧边的小组件栏放置文件夹(分类)栏，把主背景改成嵌入不随滚动移动的纯背景效果
 
 ## 命令
 

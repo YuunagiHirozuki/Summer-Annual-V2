@@ -142,8 +142,7 @@
     position: relative; /* 容纳右上角工具条 */
     padding: 1.1em 1.4em;
     margin: 1.5em 0;
-    border-radius: 12px;
-    border: 1px solid var(--border);
+    border-radius: 16px;
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
     overflow-x: auto;
