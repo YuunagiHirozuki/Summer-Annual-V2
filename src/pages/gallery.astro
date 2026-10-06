@@ -10,7 +10,7 @@ const artworks = await getGalleryImages()
     <div class="mx-auto w-full max-w-260 px-4 py-8">
         {
             artworks.length > 0 ? (
-                <div class="columns-1 gap-8 sm:columns-2 lg:columns-3">
+                <div class="gallery-grid columns-1 gap-8 sm:columns-2 lg:columns-3">
                     {artworks.map((art) => (
                         <img
                             src={art.src}

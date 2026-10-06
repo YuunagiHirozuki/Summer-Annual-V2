@@ -64,5 +64,54 @@ const { title, description, hero = 'half', heroImage } = Astro.props
         <BackToTop transition:persist />
 
         <Footer />
-    </body>
+    
+<script>
+    // 图片放大：PhotoSwipe，文章正文与画廊通用
+    import PhotoSwipeLightbox from 'photoswipe/lightbox'
+    import 'photoswipe/style.css'
+
+    let lightbox: PhotoSwipeLightbox | undefined
+
+    /** 给图片补 PhotoSwipe 需要的 data 属性（src + 尺寸） */
+    function prepareImages(scope: ParentNode) {
+        for (const img of scope.querySelectorAll<HTMLImageElement>(
+            '.md-content img, .gallery-grid img'
+        )) {
+            if (img.dataset.pswpSrc) continue
+            img.dataset.pswpSrc = img.currentSrc || img.src
+            const w = img.getAttribute('width') ?? (img.complete ? String(img.naturalWidth) : '')
+            const h = img.getAttribute('height') ?? (img.complete ? String(img.naturalHeight) : '')
+            if (w) img.dataset.pswpWidth = w
+            if (h) img.dataset.pswpHeight = h
+            if (!img.complete) {
+                img.addEventListener(
+                    'load',
+                    () => {
+                        img.dataset.pswpWidth = String(img.naturalWidth)
+                        img.dataset.pswpHeight = String(img.naturalHeight)
+                    },
+                    { once: true }
+                )
+            }
+        }
+    }
+
+    function initLightbox() {
+        prepareImages(document)
+        if (!document.querySelector('.md-content, .gallery-grid')) return
+
+        lightbox?.destroy()
+        lightbox = new PhotoSwipeLightbox({
+            gallery: '.md-content, .gallery-grid',
+            children: 'img',
+            showHideAnimationType: 'fade',
+            pswpModule: () => import('photoswipe'),
+        })
+        lightbox.init()
+    }
+
+    document.addEventListener('astro:page-load', initLightbox)
+    document.addEventListener('astro:before-swap', () => lightbox?.destroy())
+</script>
+</body>
 </html>

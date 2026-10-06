@@ -8,23 +8,28 @@ interface Props {
 
 const { post } = Astro.props
 const raw = post.data.image
+const href = `/posts/${post.id}/`
 ---
 
-<a
-    href={`/posts/${post.id}/`}
+{/* 根元素不能用 <a>：卡片内的标签也要是链接，HTML 不允许链接嵌套 */}
+<div
     class="group block overflow-hidden rounded-sm bg-card shadow-xs transition-all duration-300 hover:shadow-sm"
 >
     {/* 封面在上（16:9 统一裁切），构建时缩到 1200px webp */}
     {
         raw && (
-            <div class="aspect-[16/9] w-full overflow-hidden">
+            <a
+                href={href}
+                class="block aspect-[16/9] w-full overflow-hidden"
+                aria-label={post.data.title}
+            >
                 <CoverImage
                     image={raw}
                     alt={post.data.title}
                     width={1200}
                     class="h-full w-full object-cover transition-transform duration-300"
                 />
-            </div>
+            </a>
         )
     }
 
@@ -38,7 +43,9 @@ const raw = post.data.image
                     title="置顶"
                 />
             )}
-            {post.data.title}
+            <a href={href} class="no-underline transition-colors duration-300">
+                {post.data.title}
+            </a>
         </h3>
         <p class="mb-2 text-sm opacity-70">
             {post.data.pubDate.toLocaleDateString('zh-CN')}
@@ -62,4 +69,4 @@ const raw = post.data.image
             )
         }
     </div>
-</a>
+</div>
