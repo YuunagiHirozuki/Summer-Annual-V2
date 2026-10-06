@@ -3,7 +3,7 @@ import { Image } from 'astro:assets'
 import type { ImageMetadata } from 'astro'
 
 interface Props {
-    image: string | ImageMetadata
+    image?: string | ImageMetadata
     alt: string
     /** 构建时缩放的目标宽度（仅对文章自带图片生效） */
     width?: number
@@ -16,16 +16,17 @@ const { image, alt, width = 800, class: className, loading = 'lazy' } =
 ---
 
 {
-    typeof image === 'string' ? (
-        <img src={image} alt={alt} loading={loading} class={className} />
-    ) : (
-        <Image
-            src={image}
-            alt={alt}
-            width={width}
-            format="webp"
-            loading={loading}
-            class={className}
-        />
-    )
+    image &&
+        (typeof image === 'string' ? (
+            <img src={image} alt={alt} loading={loading} class={className} />
+        ) : (
+            <Image
+                src={image}
+                alt={alt}
+                width={width}
+                format="webp"
+                loading={loading}
+                class={className}
+            />
+        ))
 }

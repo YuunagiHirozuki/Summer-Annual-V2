@@ -39,7 +39,7 @@ const href = `/posts/${post.id}/`
         >
             {post.data.pinned && (
                 <i
-                    class="iconoir-pin mr-2 inline-block align-middle text-aqua"
+                    class="mi-pin inline-block align-middle text-aqua"
                     title="置顶"
                 />
             )}
@@ -49,7 +49,7 @@ const href = `/posts/${post.id}/`
         </h3>
         <p class="mb-2 text-sm opacity-70">
             {post.data.pubDate.toLocaleDateString('zh-CN')}
-            {post.data.categories && `｜📂 ${post.data.categories}`}
+            {post.data.categories && `｜ ${post.data.categories}`}
         </p>
         <p class="text-base leading-relaxed opacity-90">
             {post.data.description}

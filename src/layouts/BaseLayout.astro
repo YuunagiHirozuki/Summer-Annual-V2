@@ -83,7 +83,7 @@ const { title, description, hero = 'half', heroImage } = Astro.props
             img.draggable = false
 
             const setDims = () => {
-                const anchor = img.parentElement
+                const anchor = img.parentElement as HTMLAnchorElement
                 if (!anchor || anchor.tagName !== 'A') return
                 anchor.dataset.pswpWidth = String(
                     Number(img.getAttribute('width')) || img.naturalWidth || 0
@@ -94,9 +94,9 @@ const { title, description, hero = 'half', heroImage } = Astro.props
                 anchor.dataset.pswpSrc = anchor.href
             }
 
-            let anchor = img.parentElement
+            let anchor = img.parentElement as HTMLAnchorElement | null
             if (!anchor || anchor.tagName !== 'A') {
-                anchor = document.createElement('a')
+                anchor = document.createElement('a') as HTMLAnchorElement
                 anchor.href = img.currentSrc || img.src
                 img.replaceWith(anchor)
                 anchor.appendChild(img)
@@ -121,8 +121,8 @@ const { title, description, hero = 'half', heroImage } = Astro.props
             pswpModule: () => import('photoswipe'),
         })
         lightbox.init()
-        // 调试句柄
-        window.__pswpLB = lightbox
+        // 调试句柄（注意上一行必须有分号，避免 ASI 陷阱）
+        ;(window as unknown as { __pswpLB?: unknown }).__pswpLB = lightbox
     }
 
     document.addEventListener('astro:page-load', initLightbox)

@@ -1,4 +1,5 @@
 ---
+import type { ImageMetadata } from 'astro'
 import CoverImage from '../components/CoverImage.astro'
 import TOC from '../components/TOC.astro'
 import { postCoverSrc, type Post } from '../utils/posts'
@@ -11,7 +12,7 @@ interface Props {
 
 const { post, prev, next } = Astro.props
 const { title, pubDate, updatedDate, tags } = post.data
-const rawImage = post.data.image
+const rawImage = post.data.image as string | ImageMetadata | undefined
 const cover = postCoverSrc(post)
 ---
 
@@ -137,7 +138,7 @@ const cover = postCoverSrc(post)
 <script>
     // 代码块：语言标签单独占顶栏一行，右侧复制按钮为 icon
     function initCodeBlocks() {
-        document.querySelectorAll('.md-content pre').forEach((pre) => {
+        document.querySelectorAll<HTMLPreElement>('.md-content pre').forEach((pre) => {
             if (pre.dataset.toolbar) return
             pre.dataset.toolbar = '1'
 
@@ -183,11 +184,5 @@ const cover = postCoverSrc(post)
         })
     }
 
-document.addEventListener('astro:page-load', () => {
-        initCodeBlocks()
-        initLightbox()
-    })
+document.addEventListener('astro:page-load', initCodeBlocks)
 </script>
-
-<style is:global>
-

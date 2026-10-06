@@ -246,7 +246,7 @@ const links = [
         setDrawer(false)
 
         // 每次换页重新测量 hero 高度
-        heroHeight = document.querySelector('#hero')?.offsetHeight ?? 400
+        heroHeight = (document.querySelector('#hero') as HTMLElement | null)?.offsetHeight ?? 400
 
         if (!nav.dataset.bound) {
             nav.dataset.bound = '1'
@@ -262,7 +262,7 @@ const links = [
                 { passive: true }
             )
             window.addEventListener('resize', () => {
-                heroHeight = document.querySelector('#hero')?.offsetHeight ?? 400
+                heroHeight = (document.querySelector('#hero') as HTMLElement | null)?.offsetHeight ?? 400
             })
         }
         updateNavStyle(nav)

@@ -1,31 +1,42 @@
 ---
+import type { ImageMetadata } from 'astro'
 import AvatarImg from '../assets/images/avatar.png'
 import { Icon } from 'astro-icon/components'
+import PgcBangumi from '../assets/icons/pgc_bangumi.svg'
 
-const SNS = [
+type SnsEntry =
+    | { name: string; type: 'icon'; icon: string; url: string }
+    | { name: string; type: 'image'; icon: ImageMetadata; url: string }
+
+const SNS: SnsEntry[] = [
     {
         name: 'GitHub',
         icon: 'fa6-brands:github',
+        type: 'icon',
         url: 'https://github.com/YuunagiHiroizuki',
     },
     {
         name: 'Pixiv',
         icon: 'fa6-brands:pixiv',
+        type: 'icon',
         url: 'https://www.pixiv.net/users/34672478',
     },
     {
         name: 'Twitter',
         icon: 'fa6-brands:x-twitter',
+        type: 'icon',
         url: 'https://x.com/YunagiHiroizuki',
     },
     {
         name: 'Bilibili',
         icon: 'fa6-brands:bilibili',
+        type: 'icon',
         url: 'https://space.bilibili.com/340019589',
     },
     {
         name: 'Bangumi',
-        icon: '/src/assets/icons/pgc_bangumi.svg',
+        icon: PgcBangumi,
+        type: 'image',
         url: 'https://bgm.tv/user/yuunagihiroizuk',
     },
 ]
@@ -44,7 +55,7 @@ const SNS = [
     >
         <!-- 左侧头像 -->
         <img
-            src={AvatarImg.src}
+            src={(AvatarImg as ImageMetadata).src}
             alt="头像"
             class="h-46 w-46 shrink-0 rounded-full object-cover"
         />
@@ -69,8 +80,8 @@ const SNS = [
                             title={s.name}
                             class="flex h-10 w-10 items-center justify-center rounded-full text-muted transition-all duration-300 hover:bg-background hover:text-aqua"
                         >
-                            {s.name === 'Bangumi' ? (
-                                <img src={s.icon} class="h-6 w-6" alt={s.name} />
+                            {s.type === 'image' ? (
+                                <img src={s.icon.src} class="h-6 w-6" alt={s.name} />
                             ) : (
                                 <Icon name={s.icon} width="25" height="25" />
                             )}

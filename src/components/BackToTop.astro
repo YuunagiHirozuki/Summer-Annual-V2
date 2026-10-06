@@ -40,7 +40,7 @@
         if (!btn) return
 
         // 每次换页重新测量
-        heroHeight = document.querySelector('#hero')?.offsetHeight ?? 400
+        heroHeight = (document.querySelector('#hero') as HTMLElement | null)?.offsetHeight ?? 400
         footer = document.querySelector('footer')
 
         if (!bound) {
