@@ -97,38 +97,6 @@ const articles = [] // { dir?|file?, slug, category }
 const isArticleDir = (dir) =>
     existsSync(join(dir, 'index.md')) || existsSync(join(dir, 'index.mdx'))
 
-/** 递归收集：含 index.md 的目录 = 文章，否则继续深入（组织目录） */
-function collect(dir, category) {
-    for (const entry of readdirSync(dir)) {
-        if (entry.startsWith('.') || SKIP_DIRS.has(entry)) continue
-        const full = join(dir, entry)
-        if (!statSync(full).isDirectory()) {
-            const ext = extname(entry).toLowerCase()
-            if (MD_EXTENSIONS.has(ext)) {
-                articles.push({
-                    file: full,
-                    slug: basename(entry, extname(entry)).replace(/\s+/g, '-'),
-                    category,
-                    ext,
-                })
-            }
-            continue
-        }
-        if (isArticleDir(full)) {
-            articles.push({
-                dir: full,
-                slug: entry.replace(/\s+/g, '-'),
-                category,
-                indexName: existsSync(join(full, 'index.md'))
-                    ? 'index.md'
-                    : 'index.mdx',
-            })
-        } else {
-            collect(full, category)
-        }
-    }
-}
-
 // ===== 顶层遍历：一级目录 = 分类，根目录直放 = 无分类 =====
 for (const entry of readdirSync(repoPath)) {
     if (entry.startsWith('.') || entry.startsWith('_')) continue
@@ -163,8 +131,37 @@ for (const entry of readdirSync(repoPath)) {
         continue
     }
 
-    // 一级目录 = 分类
-    collect(full, entry)
+    // 一级目录 = 分类，二级目录 = 文章（严格两级）
+    for (const child of readdirSync(full)) {
+        if (child.startsWith('.') || SKIP_DIRS.has(child)) continue
+        const childFull = join(full, child)
+        if (!statSync(childFull).isDirectory()) {
+            const ext = extname(child).toLowerCase()
+            if (MD_EXTENSIONS.has(ext)) {
+                articles.push({
+                    file: childFull,
+                    slug: basename(child, extname(child)).replace(/\s+/g, '-'),
+                    category: entry,
+                    ext,
+                })
+            }
+            continue
+        }
+        if (!isArticleDir(childFull)) {
+            console.warn(
+                `[import-content] 跳过 ${entry}/${child}：目录里没有 index.md（文章必须是 分类/文章名/index.md 两级结构）`
+            )
+            continue
+        }
+        articles.push({
+            dir: childFull,
+            slug: child.replace(/\s+/g, '-'),
+            category: entry,
+            indexName: existsSync(join(childFull, 'index.md'))
+                ? 'index.md'
+                : 'index.mdx',
+        })
+    }
 }
 
 if (articles.length === 0) {

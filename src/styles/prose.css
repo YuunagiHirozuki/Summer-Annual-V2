@@ -142,7 +142,6 @@
 
 .md-content .code-block {
     margin: 1.5em 0;
-    border: 1px solid var(--border);
     border-radius: 16px;
     overflow: hidden;
 }
