@@ -1,6 +1,7 @@
 ---
 import { SITE_TITLE } from '../consts'
 import LogoLight from '../assets/images/SummerAnnual_Light.svg'
+import LogoDark from '../assets/images/SummerAnnual_Dark.svg'
 import HeaderLink from './HeaderLink.astro'
 import { Icon } from 'astro-icon/components'
 
@@ -30,7 +31,12 @@ const links = [
                 <img
                     src={LogoLight.src}
                     alt={SITE_TITLE}
-                    class="h-9 w-auto max-w-none"
+                    class="logo-light h-11 w-auto max-w-none"
+                />
+                <img
+                    src={LogoDark.src}
+                    alt={SITE_TITLE}
+                    class="logo-dark h-11 w-auto max-w-none"
                 />
             </a>
         </div>
@@ -145,6 +151,14 @@ const links = [
         display: none;
     }
     html[data-theme='light'] .theme-icon-dark {
+        display: none;
+    }
+
+    /* Logo 同理：Light 版（白色）配黑夜模式，Dark 版配白天模式 */
+    html[data-theme='dark'] .logo-dark {
+        display: none;
+    }
+    html[data-theme='light'] .logo-light {
         display: none;
     }
 
