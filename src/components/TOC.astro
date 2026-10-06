@@ -22,19 +22,31 @@
     .toc-list a {
         display: block;
         overflow: hidden;
+        padding: 4px 8px;
+        border-radius: 6px;
         text-overflow: ellipsis;
         white-space: nowrap;
         color: var(--muted);
         text-decoration: none;
-        transition: color 0.2s ease;
+        transition:
+            color 0.2s ease,
+            background-color 0.2s ease;
     }
 
     .toc-list a:hover {
         color: var(--aqua);
     }
+
+    /* 阅读进度：滚动到某个标题时，对应目录条目高亮为水色 */
+    .toc-list a.toc-active {
+        background-color: var(--aqua);
+        color: var(--aqua-contrast);
+    }
 </style>
 
 <script>
+    const SCROLL_OFFSET = 96 // 固定导航高度 + 余量
+
     function initTOC() {
         const toc = document.getElementById('toc-card')
         const tocList = document.getElementById('toc-list')
@@ -70,7 +82,45 @@
             li.appendChild(a)
             tocList.appendChild(li)
         }
+
+        updateActiveTocEntry()
+    }
+
+    /** 阅读进度：取视口顶线上方最近的标题，在目录里高亮它 */
+    function updateActiveTocEntry() {
+        const tocList = document.getElementById('toc-list')
+        const content = document.querySelector('article .md-content')
+        if (!tocList || !content) return
+
+        const headings = Array.from(
+            content.querySelectorAll('h2, h3, h4, h5')
+        )
+        if (headings.length === 0) return
+
+        let current: Element | undefined
+        for (const heading of headings) {
+            if (heading.getBoundingClientRect().top <= SCROLL_OFFSET) {
+                current = heading
+            } else {
+                break
+            }
+        }
+        // 滚到页底时高亮最后一项
+        if (
+            window.innerHeight + window.scrollY >=
+            document.documentElement.scrollHeight - 2
+        ) {
+            current = headings[headings.length - 1]
+        }
+
+        for (const a of tocList.querySelectorAll('a')) {
+            a.classList.toggle(
+                'toc-active',
+                !!current && a.getAttribute('href') === `#${current.id}`
+            )
+        }
     }
 
     document.addEventListener('astro:page-load', initTOC)
+    window.addEventListener('scroll', updateActiveTocEntry, { passive: true })
 </script>
