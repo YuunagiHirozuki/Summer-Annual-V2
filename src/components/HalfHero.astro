@@ -1,21 +1,27 @@
 ---
+import CoverImage from './CoverImage.astro'
+import halfcoverImg from '../assets/images/halfcover.png'
+
 interface Props {
-    image?: string
+    /** 传入 R2/优化图元数据或公共路径；不传则用默认 halfcover */
+    image?: string | ImageMetadata
 }
 
 const { image } = Astro.props
+const src: string | ImageMetadata = image ?? halfcoverImg
 ---
 
-<!-- 内页的半屏封面 -->
+<!-- 内页的半屏封面（构建时缩到 1920px webp） -->
 <a href="#main" class="block w-full">
     <section id="hero" class="relative h-[60vh] w-full overflow-hidden">
         {
-            image && (
-                <img
-                    src={image}
+            src && (
+                <CoverImage
+                    image={src}
                     alt=""
-                    class="absolute inset-0 h-full w-full object-cover object-[center_20%]"
+                    width={1920}
                     loading="eager"
+                    class="absolute inset-0 h-full w-full object-cover object-[center_20%]"
                 />
             )
         }

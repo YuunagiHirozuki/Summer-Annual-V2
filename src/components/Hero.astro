@@ -1,15 +1,24 @@
 ---
+import { Image } from 'astro:assets'
+import coverImg from '../assets/images/cover.jpg'
 import { SITE_SIGNATURE, SITE_TITLE } from '../consts'
 ---
 
-<!-- 首页/文章页的全屏封面 -->
+<!-- 首页/文章页的全屏封面（构建时缩到 1920px webp） -->
 <div class="relative h-screen w-full">
     <a href="#main" class="block h-full w-full">
         <section
             id="hero"
-            class="relative flex h-screen w-full flex-col items-center justify-center bg-cover bg-center text-white"
-            style="background-image: url('/src/assets/images/cover.jpg');"
+            class="relative flex h-screen w-full flex-col items-center justify-center text-on-hero"
         >
+            <Image
+                src={coverImg}
+                alt=""
+                width={1920}
+                format="webp"
+                loading="eager"
+                class="absolute inset-0 h-full w-full object-cover"
+            />
             <div class="relative z-10 mx-auto max-w-4xl px-4 text-right">
                 <h1 class="text-3xl font-bold text-on-hero text-shadow-lg/30 sm:text-4xl md:text-5xl">
                     {SITE_TITLE}
