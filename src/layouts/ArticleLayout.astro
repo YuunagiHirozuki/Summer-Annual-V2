@@ -100,12 +100,16 @@ const cover = postCoverSrc(post)
                     )
                 }
 
-                <a
-                    href="/"
-                    class="justify-self-center text-center transition hover:text-aqua"
+                <div
+                    class="flex min-h-12 items-center justify-self-center self-stretch border-x border-border px-4"
                 >
-                    All Posts
-                </a>
+                    <a
+                        href="/"
+                        class="text-center transition hover:text-aqua"
+                    >
+                        All Posts
+                    </a>
+                </div>
 
                 {
                     next ? (
@@ -161,7 +165,7 @@ const cover = postCoverSrc(post)
                     btn.textContent = 'Copy Failed'
                 }
                 setTimeout(() => {
-                    btn.innerHTML = '<i class="mi-chevron-right text-inherit"></i>'
+                    btn.textContent = 'Copy'
                 }, 1500)
             })
             toolbar.appendChild(btn)
