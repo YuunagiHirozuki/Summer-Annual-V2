@@ -4,6 +4,14 @@ export type Post = CollectionEntry<'posts'>
 
 export const POSTS_PER_PAGE = 6
 
+/** 站点统一的日期显示格式：YYYY-MM-DD */
+export function formatDate(date: Date): string {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
+}
+
 /** 已发布文章：置顶优先，其余按发布日期倒序 */
 export async function getSortedPosts(): Promise<Post[]> {
     const posts = await getCollection('posts', ({ data }) => !data.draft)

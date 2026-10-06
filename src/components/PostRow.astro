@@ -1,6 +1,6 @@
 ---
 import CoverImage from './CoverImage.astro'
-import type { Post } from '../utils/posts'
+import { formatDate, type Post } from '../utils/posts'
 
 interface Props {
     post: Post
@@ -39,7 +39,7 @@ const { post } = Astro.props
                 datetime={post.data.pubDate.toISOString()}
                 class="shrink-0 text-sm text-muted"
             >
-                {post.data.pubDate.toLocaleDateString('zh-CN')}
+                {formatDate(post.data.pubDate)}
             </time>
         </div>
     </a>
