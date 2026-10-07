@@ -51,6 +51,16 @@ const links = [
         </div>
 
         <div class="flex shrink-0 items-center gap-2">
+            <!-- 站内搜索 -->
+            <button
+                type="button"
+                data-search-toggle
+                aria-label="搜索"
+                class="flex h-8 w-8 items-center justify-center rounded-full transition-colors duration-300 hover:bg-ink hover:text-aqua"
+            >
+                <Icon name="mdi:search" class="text-xl" />
+            </button>
+
             <!-- 白天/黑夜切换 -->
             <button
                 type="button"
@@ -83,6 +93,18 @@ const links = [
     </div>
 </nav>
 
+<!-- 搜索面板：导航栏下方的卡片 -->
+<div id="search-panel" class="fixed inset-x-0 top-0 z-40 hidden px-4 pt-24">
+    <div
+        class="mx-auto max-w-2xl rounded-sm border border-border bg-surface p-4 shadow-lg"
+    >
+        <div id="search-panel-ui"></div>
+        <p class="search-fallback hidden text-sm text-muted">
+            搜索索引未构建：本地环境先运行一次 pnpm build 即可启用。
+        </p>
+    </div>
+</div>
+
 <!-- 抽屉遮罩 -->
 <div id="drawer-backdrop" class="fixed inset-0 z-40 bg-black/50 lg:hidden">
 </div>
@@ -111,6 +133,17 @@ const links = [
 </aside>
 
 <style>
+    /* 搜索面板：Pagefind UI 跟随主题 token（变量继承进动态生成的内部元素） */
+    #search-panel {
+        --pagefind-ui-scale: 0.9;
+        --pagefind-ui-primary: var(--aqua);
+        --pagefind-ui-text: var(--ink);
+        --pagefind-ui-background: var(--surface);
+        --pagefind-ui-border: var(--border);
+        --pagefind-ui-tag: var(--tag-bg);
+        --pagefind-ui-result-border: var(--border);
+    }
+
     /* 滚动后导航条变实底（由脚本切换 .nav--scrolled） */
     .nav--scrolled {
         background-color: color-mix(
@@ -269,4 +302,87 @@ const links = [
     }
 
     document.addEventListener('astro:page-load', initHeader)
+</script>
+
+<script>
+    // ===== 站内搜索（Pagefind）：导航栏图标 → 下方搜索卡片 =====
+    let pagefindUI: unknown = null
+    let pagefindLoading = false
+
+    const searchPanel = document.getElementById('search-panel')
+    const searchBox = document.getElementById('search-panel-ui')
+
+    function setSearchOpen(open: boolean) {
+        searchPanel?.classList.toggle('hidden', !open)
+        if (open) {
+            void ensurePagefindUI().then(() => {
+                searchPanel
+                    ?.querySelector<HTMLInputElement>('input')
+                    ?.focus()
+            })
+        }
+    }
+
+    async function ensurePagefindUI() {
+        if (pagefindUI || pagefindLoading || !searchBox) return
+        pagefindLoading = true
+        try {
+            if (!window.PagefindUI) {
+                await new Promise<void>((resolve, reject) => {
+                    const script = document.createElement('script')
+                    script.src = '/pagefind/pagefind-ui.js'
+                    script.onload = () => resolve()
+                    script.onerror = () => reject(new Error('load failed'))
+                    document.head.appendChild(script)
+                })
+                const link = document.createElement('link')
+                link.rel = 'stylesheet'
+                link.href = '/pagefind/pagefind-ui.css'
+                document.head.appendChild(link)
+            }
+            pagefindUI = new window.PagefindUI({
+                element: '#search-panel-ui',
+                showSubResults: true,
+                translations: {
+                    placeholder: '搜索文章…',
+                    clear_search: '清除',
+                    load_more: '加载更多结果',
+                    search_label: '搜索本站',
+                    zero_results: '没有找到「[SEARCH_TERM]」相关内容',
+                    many_results: '[COUNT] 条「[QUERY]」的结果',
+                    one_result: '1 条「[QUERY]」的结果',
+                    searching: '正在搜索「[QUERY]」…',
+                },
+            })
+        } catch {
+            // 索引未构建（本地 dev）：显示提示
+            searchBox.previousElementSibling?.classList.remove('hidden')
+            searchBox.classList.add('hidden')
+        } finally {
+            pagefindLoading = false
+        }
+    }
+
+    document.addEventListener('click', (event) => {
+        const target =
+            event.target instanceof Element ? event.target : null
+        if (!target) return
+        if (target.closest('[data-search-toggle]')) {
+            setSearchOpen(searchPanel?.classList.contains('hidden') ?? false)
+        } else if (
+            !target.closest('#search-panel') &&
+            !searchPanel?.classList.contains('hidden')
+        ) {
+            setSearchOpen(false)
+        }
+    })
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') setSearchOpen(false)
+    })
+
+    document.addEventListener('astro:after-swap', () => {
+        setSearchOpen(false)
+        pagefindUI = null // 面板节点随导航重建，下次打开时重新初始化
+    })
 </script>
