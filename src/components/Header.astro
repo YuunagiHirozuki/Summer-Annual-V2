@@ -312,22 +312,39 @@ const links = [
     const searchPanel = document.getElementById('search-panel')
     const searchBox = document.getElementById('search-panel-ui')
 
-    function setSearchOpen(open: boolean) {
-        searchPanel?.classList.toggle('hidden', !open)
-        if (open) {
-            void ensurePagefindUI().then(() => {
-                searchPanel
-                    ?.querySelector<HTMLInputElement>('input')
-                    ?.focus()
-            })
+    async function setSearchOpen(open: boolean) {
+        if (!open) {
+            searchPanel?.classList.add('hidden')
+            return
         }
+
+        await ensurePagefindUI()
+
+        searchPanel?.classList.remove('hidden')
+
+        searchPanel
+            ?.querySelector<HTMLInputElement>('input')
+            ?.focus()
     }
 
     async function ensurePagefindUI() {
         if (pagefindUI || pagefindLoading || !searchBox) return
+
         pagefindLoading = true
+
         try {
-            if (!window.PagefindUI) {
+            type PagefindUIConstructor = new (
+                options: Record<string, unknown>,
+            ) => unknown
+
+            const getPagefindUI = () =>
+                (window as unknown as {
+                    PagefindUI?: PagefindUIConstructor
+                }).PagefindUI
+
+            let PagefindUICtor = getPagefindUI()
+
+            if (!PagefindUICtor) {
                 await new Promise<void>((resolve, reject) => {
                     const script = document.createElement('script')
                     script.src = '/pagefind/pagefind-ui.js'
@@ -335,28 +352,31 @@ const links = [
                     script.onerror = () => reject(new Error('load failed'))
                     document.head.appendChild(script)
                 })
+
                 const link = document.createElement('link')
                 link.rel = 'stylesheet'
                 link.href = '/pagefind/pagefind-ui.css'
                 document.head.appendChild(link)
+
+                PagefindUICtor = getPagefindUI()
             }
-            const PagefindUICtor = (
-                window as unknown as {
-                    PagefindUI: new (options: Record<string, unknown>) => unknown
-                }
-            ).PagefindUI
+
+            if (!PagefindUICtor) {
+                throw new Error('PagefindUI failed to load')
+            }
+
             pagefindUI = new PagefindUICtor({
                 element: '#search-panel-ui',
                 showSubResults: true,
                 translations: {
-                    placeholder: '搜索文章…',
-                    clear_search: '清除',
-                    load_more: '加载更多结果',
-                    search_label: '搜索本站',
-                    zero_results: '没有找到「[SEARCH_TERM]」相关内容',
-                    many_results: '[COUNT] 条「[QUERY]」的结果',
-                    one_result: '1 条「[QUERY]」的结果',
-                    searching: '正在搜索「[QUERY]」…',
+                    placeholder: 'Search…',
+                    clear_search: '<i class="mi-close"></i>',
+                    load_more: 'Load more results…',
+                    search_label: 'Search this site',
+                    zero_results: 'No results found for「[SEARCH_TERM]」',
+                    many_results: '[COUNT] results for「[QUERY]」',
+                    one_result: '1 result for「[QUERY]」',
+                    searching: 'Searching for「[QUERY]」…',
                 },
             })
         } catch {
