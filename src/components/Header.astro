@@ -27,7 +27,7 @@ const links = [
     <div class="flex items-center justify-between gap-4">
         <!-- Logo -->
         <div class="shrink-0">
-            <a href="#top" class="block no-underline">
+            <a href="/" class="block no-underline">
                 <img
                     src={LogoLight.src}
                     alt={SITE_TITLE}
@@ -96,12 +96,37 @@ const links = [
 <!-- 搜索面板：导航栏下方的卡片 -->
 <div id="search-panel" class="fixed inset-x-0 top-0 z-40 hidden px-4 pt-24">
     <div
-        class="mx-auto max-w-2xl rounded-sm border border-border bg-surface p-4 shadow-lg"
+        class="mx-auto max-h-[85vh] max-w-2xl overflow-y-auto rounded-sm border border-border bg-surface p-4 shadow-lg"
     >
-        <div id="search-panel-ui"></div>
-        <p class="search-fallback hidden text-sm text-muted">
-            搜索索引未构建：本地环境先运行一次 pnpm build 即可启用。
-        </p>
+        <!-- 搜索框 -->
+        <div class="relative top-2">
+            <input
+                id="search-input"
+                type="search"
+                placeholder="Search"
+                aria-label="搜索本站"
+                autocomplete="off"
+                class="w-full rounded-sm border border-border bg-surface px-4 py-2 pr-12 text-ink outline-none transition-colors focus:border-aqua"
+            />
+
+            <button
+                id="search-submit"
+                type="button"
+                aria-label="搜索"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-muted transition-colors hover:text-aqua"
+            >
+                <Icon name="mdi:search" class="text-xl" />
+            </button>
+        </div>
+
+        <!-- 搜索状态 -->
+        <p
+            id="search-status"
+            class="mt-6 hidden text-sm text-muted"
+        ></p>
+
+        <!-- 搜索结果 -->
+        <div id="search-results" class="mt-4"></div>
     </div>
 </div>
 
@@ -133,17 +158,6 @@ const links = [
 </aside>
 
 <style>
-    /* 搜索面板：Pagefind UI 跟随主题 token（变量继承进动态生成的内部元素） */
-    #search-panel {
-        --pagefind-ui-scale: 0.9;
-        --pagefind-ui-primary: var(--aqua);
-        --pagefind-ui-text: var(--ink);
-        --pagefind-ui-background: var(--surface);
-        --pagefind-ui-border: var(--border);
-        --pagefind-ui-tag: var(--tag-bg);
-        --pagefind-ui-result-border: var(--border);
-    }
-
     /* 滚动后导航条变实底（由脚本切换 .nav--scrolled） */
     .nav--scrolled {
         background-color: color-mix(
@@ -202,6 +216,13 @@ const links = [
     }
     #navbar.nav--scrolled {
         color: var(--ink);
+    }
+
+    #search-results mark {
+        color: var(--aqua);
+        background-color: color-mix(in srgb, var(--aqua) 15%, transparent);
+        border-radius: 0.2rem;
+        padding: 0.05em 0.2em;
     }
 </style>
 
@@ -304,110 +325,172 @@ const links = [
     document.addEventListener('astro:page-load', initHeader)
 </script>
 
-<script>
-    // ===== 站内搜索（Pagefind）：导航栏图标 → 下方搜索卡片 =====
-    let pagefindUI: unknown = null
-    let pagefindLoading = false
 
-    const searchPanel = document.getElementById('search-panel')
-    const searchBox = document.getElementById('search-panel-ui')
+<script is:inline type="module">
+    // ===== 站内搜索 =====
 
-    async function setSearchOpen(open: boolean) {
-        if (!open) {
-            searchPanel?.classList.add('hidden')
+    let pagefind = null
+
+    async function loadPagefind() {
+        if (pagefind) return pagefind
+
+        try {
+            pagefind = await import('/pagefind/pagefind.js')
+            return pagefind
+        } catch {
+            return null
+        }
+    }
+
+    function setSearchOpen(open) {
+        const searchPanel = document.getElementById('search-panel')
+        const searchInput =
+            document.getElementById('search-input')
+
+        searchPanel?.classList.toggle('hidden', !open)
+
+        if (open) {
+            searchInput?.focus()
+        }
+    }
+
+    async function performSearch(query) {
+        const searchResults =
+            document.getElementById('search-results')
+        const searchStatus =
+            document.getElementById('search-status')
+
+        if (!searchResults || !searchStatus) return
+
+        const keyword = query.trim()
+
+        if (!keyword) {
+            searchResults.innerHTML = ''
+            searchStatus.classList.add('hidden')
             return
         }
 
-        await ensurePagefindUI()
+        searchStatus.textContent = '搜索中…'
+        searchStatus.classList.remove('hidden')
+        searchResults.innerHTML = ''
 
-        searchPanel?.classList.remove('hidden')
+        const pf = await loadPagefind()
 
-        searchPanel
-            ?.querySelector<HTMLInputElement>('input')
-            ?.focus()
-    }
-
-    async function ensurePagefindUI() {
-        if (pagefindUI || pagefindLoading || !searchBox) return
-
-        pagefindLoading = true
+        if (!pf) {
+            searchStatus.textContent =
+                '搜索索引未构建，请运行 pnpm build 后使用 pnpm preview 查看。'
+            return
+        }
 
         try {
-            type PagefindUIConstructor = new (
-                options: Record<string, unknown>,
-            ) => unknown
+            const search = await pf.search(keyword)
 
-            const getPagefindUI = () =>
-                (window as unknown as {
-                    PagefindUI?: PagefindUIConstructor
-                }).PagefindUI
+            searchStatus.textContent = search.results.length
+                ? `找到 ${search.results.length} 条结果`
+                : `没有找到「${keyword}」相关内容`
 
-            let PagefindUICtor = getPagefindUI()
+            const results = await Promise.all(
+                search.results.map((result) => result.data()),
+            )
 
-            if (!PagefindUICtor) {
-                await new Promise<void>((resolve, reject) => {
-                    const script = document.createElement('script')
-                    script.src = '/pagefind/pagefind-ui.js'
-                    script.onload = () => resolve()
-                    script.onerror = () => reject(new Error('load failed'))
-                    document.head.appendChild(script)
-                })
+            for (const data of results) {
+                const article = document.createElement('a')
 
-                const link = document.createElement('link')
-                link.rel = 'stylesheet'
-                link.href = '/pagefind/pagefind-ui.css'
-                document.head.appendChild(link)
+                article.href = data.url
+                article.className =
+                    'block border-b border-border px-3 py-3 rounded-sm no-underline transition-colors last:border-b-0 hover:text-aqua hover:bg-ink/5'
 
-                PagefindUICtor = getPagefindUI()
+                const title = document.createElement('h3')
+                title.className =
+                    'text-base font-medium text-ink'
+                title.textContent =
+                    data.meta?.title ?? '无标题'
+
+                const excerpt = document.createElement('p')
+                excerpt.className =
+                    'mt-1 text-sm leading-relaxed text-muted'
+                excerpt.innerHTML =
+                    data.excerpt ?? ''
+
+                article.append(title, excerpt)
+                searchResults.appendChild(article)
             }
-
-            if (!PagefindUICtor) {
-                throw new Error('PagefindUI failed to load')
-            }
-
-            pagefindUI = new PagefindUICtor({
-                element: '#search-panel-ui',
-                showSubResults: true,
-                translations: {
-                    placeholder: 'Search…',
-                    clear_search: '<i class="mi-close"></i>',
-                    load_more: 'Load more results…',
-                    search_label: 'Search this site',
-                    zero_results: 'No results found for「[SEARCH_TERM]」',
-                    many_results: '[COUNT] results for「[QUERY]」',
-                    one_result: '1 result for「[QUERY]」',
-                    searching: 'Searching for「[QUERY]」…',
-                },
-            })
         } catch {
-            // 索引未构建（本地 dev）：显示提示
-            searchBox.previousElementSibling?.classList.remove('hidden')
-            searchBox.classList.add('hidden')
-        } finally {
-            pagefindLoading = false
+            searchStatus.textContent = '搜索失败。'
+            searchResults.innerHTML = ''
         }
     }
 
+    let searchTimer = null
+
+    document.addEventListener('input', (event) => {
+        const target = event.target
+
+        if (!(target instanceof HTMLInputElement)) return
+        if (target.id !== 'search-input') return
+
+        if (searchTimer) {
+            clearTimeout(searchTimer)
+        }
+
+        searchTimer = setTimeout(() => {
+            void performSearch(target.value)
+        }, 200)
+    })
+
     document.addEventListener('click', (event) => {
         const target =
-            event.target instanceof Element ? event.target : null
+            event.target instanceof Element
+                ? event.target
+                : null
+
         if (!target) return
+
         if (target.closest('[data-search-toggle]')) {
-            setSearchOpen(searchPanel?.classList.contains('hidden') ?? false)
-        } else if (
+            const searchPanel =
+                document.getElementById('search-panel')
+
+            const isHidden =
+                searchPanel?.classList.contains('hidden') ?? true
+
+            setSearchOpen(isHidden)
+            return
+        }
+
+        if (target.closest('#search-submit')) {
+            const searchInput =
+                document.getElementById('search-input')
+
+            if (searchInput) {
+                void performSearch(searchInput.value)
+            }
+
+            return
+        }
+
+        if (
             !target.closest('#search-panel') &&
-            !searchPanel?.classList.contains('hidden')
+            !document
+                .getElementById('search-panel')
+                ?.classList.contains('hidden')
         ) {
             setSearchOpen(false)
         }
     })
 
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') setSearchOpen(false)
+        if (event.key !== 'Escape') return
+
+        const searchPanel =
+            document.getElementById('search-panel')
+
+        if (!searchPanel?.classList.contains('hidden')) {
+            setSearchOpen(false)
+        }
     })
 
-    document.addEventListener('astro:after-swap', () => {
+    document.addEventListener('astro:page-load', () => {
         setSearchOpen(false)
-        pagefindUI = null // 面板节点随导航重建，下次打开时重新初始化
     })
 </script>
+
