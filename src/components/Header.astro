@@ -340,7 +340,12 @@ const links = [
                 link.href = '/pagefind/pagefind-ui.css'
                 document.head.appendChild(link)
             }
-            pagefindUI = new window.PagefindUI({
+            const PagefindUICtor = (
+                window as unknown as {
+                    PagefindUI: new (options: Record<string, unknown>) => unknown
+                }
+            ).PagefindUI
+            pagefindUI = new PagefindUICtor({
                 element: '#search-panel-ui',
                 showSubResults: true,
                 translations: {

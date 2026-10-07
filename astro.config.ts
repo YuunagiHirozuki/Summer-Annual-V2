@@ -17,7 +17,6 @@ export default defineConfig({
             themes: ['one-dark-pro'],
             styleOverrides: {
                 borderRadius: '16px',
-                codeBorderRadius: '0',
                 codeFontSize: '0.875rem',
                 codeLineHeight: '1.7',
                 codePadding: '1.1em 1.4em',
