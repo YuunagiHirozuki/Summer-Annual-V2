@@ -136,20 +136,69 @@
     font-size: 0.875em;
 }
 
-/* ===== Expressive Code 代码块 ===== */
-/* 语言标签：单独一行居中显示（终端框在标题栏居中，普通块预留一行） */
-.md-content pre[data-language] {
-    position: relative;
+/* ===== 代码块 ===== */
+/* 外壳（.code-block）承载边框圆角；顶栏（.code-header）单独一行放
+   语言标签和复制 icon，由 ArticleLayout 脚本注入 */
+
+.md-content .code-block {
+    margin: 1.5em 0;
+    border-radius: 16px;
+    overflow: hidden;
 }
 
-.md-content pre[data-language]::after {
-    content: attr(data-language);
-    position: absolute;
-    top: 0.6rem;
-    left: 50%;
-    transform: translateX(-50%);
+.md-content .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 10px 10px 0px 10px;
+    background-color: #24292e;
+    color: rgb(228 231 236 / 0.5);
     font-size: 0.72rem;
     letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: rgb(228 231 236 / 0.5);
+}
+
+.code-lang {
+    font-size: 0.8rem;
+}
+
+.code-copy {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    border: none;
+    background: none;
+    padding: 0;
+    color: rgb(228 231 236 / 0.55);
+    font-size: 1.2rem;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.code-copy:hover {
+    color: rgb(228 231 236 / 1);
+}
+
+.md-content .code-block pre {
+    padding: 0em 1.4em 1.6em 1.4em;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+    overflow-x: auto;
+}
+
+.md-content pre code {
+    display: block; /* 消除代码块首行视觉偏移 */
+    padding: 0;
+    background: none;
+    border-radius: 0;
+    font-size: 0.875em;
+    line-height: 1.7;
+}
+
+/* 没有 .code-block 外壳的裸 pre（脚本未运行时的兜底样式） */
+.md-content pre:not(.code-block pre) {
+    margin: 1.5em 0;
+    border-radius: 16px;
 }
