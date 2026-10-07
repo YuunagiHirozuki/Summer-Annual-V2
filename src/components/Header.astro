@@ -24,7 +24,7 @@ const links = [
     id="navbar"
     class="fixed top-0 z-50 w-full bg-transparent px-4 py-4 transition-all duration-300"
 >
-    <div class="flex items-center justify-between gap-4">
+    <div class="relative flex items-center justify-between gap-4">
         <!-- Logo -->
         <div class="shrink-0">
             <a href="/" class="block no-underline">
@@ -42,7 +42,7 @@ const links = [
         </div>
 
         <!-- 桌面端链接 -->
-        <div class="hidden space-x-15 text-base lg:flex">
+        <div class="absolute left-1/2 -translate-x-1/2 hidden space-x-15 text-base lg:flex">
             {
                 links.map((l) => (
                     <HeaderLink href={l.href}>{l.label}</HeaderLink>

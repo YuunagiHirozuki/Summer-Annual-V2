@@ -8,6 +8,8 @@ const artworks = await getGalleryImages()
 
 <BaseLayout title={`Gallery - ${SITE_TITLE}`} hero="half">
     <div class="mx-auto w-full max-w-260 px-4 py-8">
+        <h1 class="text-center text-3xl font-bold">Gallery</h1>
+        <div class="my-10 h-0.5 bg-aqua"></div>
         {
             artworks.length > 0 ? (
                 <div class="gallery-grid columns-1 gap-8 sm:columns-2 lg:columns-3">
@@ -29,7 +31,6 @@ const artworks = await getGalleryImages()
                     ))}
                 </div>
             ) : (
-                <h1 class="mb-10 text-center text-3xl font-bold">Gallery</h1>
                 <div class="rounded-sm bg-card p-6 shadow-xs">
                     <p class="text-muted">
                         画廊筹备中…… 把图片上传到 R2 bucket 的 gallery/ 目录后，
