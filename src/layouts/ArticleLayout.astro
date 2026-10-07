@@ -2,7 +2,12 @@
 import type { ImageMetadata } from 'astro'
 import CoverImage from '../components/CoverImage.astro'
 import TOC from '../components/TOC.astro'
-import { formatDate, postCoverSrc, type Post } from '../utils/posts'
+import {
+    formatDate,
+    getSortedPosts,
+    postCoverSrc,
+    type Post,
+} from '../utils/posts'
 
 interface Props {
     post: Post
@@ -13,6 +18,11 @@ interface Props {
 const { post, prev, next } = Astro.props
 const { title, pubDate, updatedDate, tags } = post.data
 const rawImage = post.data.image as string | ImageMetadata | undefined
+const categoryPosts = post.data.categories
+    ? (await getSortedPosts()).filter(
+          (p) => p.data.categories === post.data.categories
+      )
+    : []
 const cover = postCoverSrc(post)
 ---
 
@@ -132,7 +142,41 @@ const cover = postCoverSrc(post)
     </div>
 
     <!-- 桌面端浮动目录 -->
-    <TOC />
+    <div class="flex w-full flex-col gap-4 self-start xl:sticky xl:top-24 xl:w-72 xl:shrink-0">
+        <TOC />
+
+        {
+            categoryPosts.length > 0 && (
+                <div class="rounded-sm bg-surface p-4 shadow-xs text-sm">
+                    <h2 class="mb-3 text-base font-semibold">
+                        {post.data.categories}
+                    </h2>
+                    <ul class="space-y-1">
+                        {categoryPosts.map((p) => (
+                            <li>
+                                <a
+                                    href={`/posts/${p.id}/`}
+                                    class:list={[
+                                        'flex items-baseline justify-between gap-2 rounded px-2 py-1 no-underline transition-colors hover:text-aqua',
+                                        p.id === post.id
+                                            ? 'bg-tag-bg text-ink'
+                                            : 'text-muted',
+                                    ]}
+                                >
+                                    <span class="truncate">
+                                        {p.data.title}
+                                    </span>
+                                    <span class="shrink-0 text-xs">
+                                        {formatDate(p.data.pubDate)}
+                                    </span>
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )
+        }
+    </div>
 </div>
 
 <script>
