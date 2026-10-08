@@ -27,16 +27,20 @@ const links = [
     <div class="relative flex items-center justify-between gap-4">
         <!-- Logo -->
         <div class="shrink-0">
-            <a href="/" class="block no-underline">
+            <a
+                href="/"
+                class="relative block h-11 w-fit no-underline"
+            >
                 <img
                     src={LogoLight.src}
                     alt={SITE_TITLE}
-                    class="logo-light h-11 w-auto max-w-none"
+                    class="logo-light relative h-11 w-auto max-w-none transition-opacity duration-300"
                 />
+
                 <img
                     src={LogoDark.src}
                     alt={SITE_TITLE}
-                    class="logo-dark h-11 w-auto max-w-none"
+                    class="logo-dark absolute left-0 top-0 h-11 w-auto max-w-none transition-opacity duration-300"
                 />
             </a>
         </div>
@@ -197,16 +201,52 @@ const links = [
     html[data-theme='dark'] .theme-icon-light {
         display: none;
     }
+
     html[data-theme='light'] .theme-icon-dark {
         display: none;
     }
 
-    /* Logo 同理：Light 版（白色）配黑夜模式，Dark 版配白天模式 */
-    html[data-theme='dark'] .logo-dark {
-        display: none;
+
+    /* ===== Logo ===== */
+
+    .logo-light,
+    .logo-dark {
+        transition:
+            opacity 300ms ease,
+            visibility 300ms ease;
     }
-    html[data-theme='light'] .logo-light {
-        display: none;
+
+    /* Hero 上方：始终使用白色 Logo */
+    body.has-hero #navbar:not(.nav--scrolled) .logo-light {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    body.has-hero #navbar:not(.nav--scrolled) .logo-dark {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    /* 滚动后 + Dark：使用白色 Logo */
+    html[data-theme='dark'] #navbar.nav--scrolled .logo-light {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    html[data-theme='dark'] #navbar.nav--scrolled .logo-dark {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    /* 滚动后 + Light：使用黑色 Logo */
+    html[data-theme='light'] #navbar.nav--scrolled .logo-light {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    html[data-theme='light'] #navbar.nav--scrolled .logo-dark {
+        opacity: 1;
+        visibility: visible;
     }
 
     /* 悬浮在 hero 上方（未滚动）时，导航文字/图标跟随 --on-hero，
