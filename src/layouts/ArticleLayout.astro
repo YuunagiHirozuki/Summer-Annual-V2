@@ -2,6 +2,7 @@
 import type { ImageMetadata } from 'astro'
 import CoverImage from '../components/CoverImage.astro'
 import TOC from '../components/TOC.astro'
+import Waline from '../components/Waline.astro'
 import {
     formatDate,
     getSortedPosts,
@@ -89,12 +90,16 @@ const cover = postCoverSrc(post)
                 }
             </div>
 
-            <!-- 评论区（可放 Giscus 等） -->
+            <!-- 评论区 -->
             <div class="px-6 pb-10 sm:px-10">
-                <h2 class="mb-4 text-lg font-semibold">Comments</h2>
-                <div id="comments" class="italic text-muted">
-                    Coming soon...
+                <div class="mb-2 text-lg font-semibold">
+                    <span>Comments</span>
+                    <span
+                        class="waline-comment-count rounded-full bg-border px-2 py-0.5 text-xs font-normal text-muted"
+                        data-path={Astro.url.pathname}
+                    ></span>
                 </div>
+                <Waline />
             </div>
 
             <!-- 上/下篇导航：三等宽栅格，长标题自动换行 -->

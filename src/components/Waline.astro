@@ -1,0 +1,17 @@
+---
+const { serverURL } = Astro.props
+---
+
+<div id="waline"></div>
+
+<script>
+    import '@waline/client/style'
+    import '../styles/waline.css'
+    import { init } from '@waline/client'
+
+    init({
+        el: '#waline',
+        serverURL: 'https://waline-summer-annual.vercel.app',
+        comment: true,
+    })
+</script>

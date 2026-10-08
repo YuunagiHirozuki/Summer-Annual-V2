@@ -1,0 +1,70 @@
+#waline .wl-meta-head {
+    display: none;
+}
+
+#waline {
+    --waline-bg-color: color-mix(in srgb, var(--card) 96%, black);
+    --waline-bg-color-light: color-mix(in srgb, var(--card) 96%, black);
+    --waline-border: 1px solid var(--border);
+    --waline-box-shadow: none;
+
+    --waline-color: var(--ink);
+    --waline-active-color: var(--aqua);
+    --waline-theme-color: var(--aqua);
+    --waline-info-color: var(--muted);
+}
+
+#waline .wl-editor:focus, .wl-input:focus {
+    --waline-bg-color: color-mix(in srgb, var(--card) 96%, black);
+}
+
+#waline .wl-nick {
+    font-weight: bold;
+}
+
+#waline .wl-panel {
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+#waline .wl-panel:focus-within {
+    border-color: var(--aqua);
+}
+
+#waline .wl-empty {
+    display: none;
+}
+
+#waline .wl-meta-foot {
+    display: none;
+}
+
+#waline .wl-like svg,
+#waline .wl-reply svg {
+    width: 16px;
+    height: 16px;
+}
+#waline .wl-like {
+    font-size: 12px;
+}
+
+#waline .wl-reply svg {
+    display: none;
+}
+
+#waline .wl-reply::after {
+    content: ' Reply';
+    position: relative;
+    top: -4px;
+    margin-left: 6px;
+}
+
+#waline .wl-reply {
+    font-size: 13px;
+    width: auto;
+    height: auto;
+}
+
+#waline .wl-nick {
+    color: var(--ink);
+}
