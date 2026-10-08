@@ -14,6 +14,10 @@
     --waline-info-color: var(--muted);
 }
 
+#waline .wl-editor {
+    min-height: 0em;
+}
+
 #waline .wl-editor:focus, .wl-input:focus {
     --waline-bg-color: color-mix(in srgb, var(--card) 96%, black);
 }
@@ -67,4 +71,44 @@
 
 #waline .wl-nick {
     color: var(--ink);
+}
+
+/* ===== 评论编辑器附加区域 ===== */
+
+#waline .wl-header,
+#waline .wl-footer {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateY(-6px);
+    pointer-events: none;
+
+    transition:
+        max-height 0.3s ease-out,
+        opacity 0.1s ease,
+        transform 0.3s ease-out;
+}
+
+/* 编辑器获得焦点后展开 */
+#waline .wl-panel:focus-within .wl-header,
+#waline .wl-panel:focus-within .wl-footer {
+    max-height: 200px;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* 去掉底部多余空白 */
+#waline .wl-header,
+#waline .wl-footer {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+#waline .wl-panel:focus-within .wl-header {
+    margin-bottom: 0.5rem;
+}
+
+#waline .wl-panel:focus-within .wl-footer {
+    margin-top: 0.5rem;
 }

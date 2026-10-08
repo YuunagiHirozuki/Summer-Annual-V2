@@ -16,4 +16,27 @@ const { serverURL } = Astro.props
         comment: true,
         pageview: true,
     })
+
+    function initCommentCount() {
+        const count = document.querySelector<HTMLElement>('.waline-comment-count')
+
+        if (!count) return
+
+        const observer = new MutationObserver(() => {
+            const value = Number.parseInt(count.textContent?.trim() ?? '', 10)
+
+            if (Number.isNaN(value)) return
+
+            count.classList.toggle('hidden', value <= 0)
+            observer.disconnect()
+        })
+
+        observer.observe(count, {
+            childList: true,
+            characterData: true,
+            subtree: true,
+        })
+    }
+
+    initCommentCount()
 </script>
