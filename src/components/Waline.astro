@@ -12,6 +12,8 @@ const { serverURL } = Astro.props
     init({
         el: '#waline',
         serverURL: 'https://waline-summer-annual.vercel.app',
+        emoji: ['https://unpkg.com/@waline/emojis@1.4.0/tw-emoji'],
         comment: true,
+        pageview: true,
     })
 </script>
