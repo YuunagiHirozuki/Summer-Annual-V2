@@ -30,6 +30,7 @@ const posts = defineCollection({
             // 图片处理，导致构建失败，所以在这里按路径形态分流
             image: z
                 .string()
+                .nullable()
                 .optional()
                 .transform((val) => {
                     if (!val || val.startsWith('/')) return val
