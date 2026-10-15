@@ -94,6 +94,12 @@
     margin: 0;
 }
 
+/* 图片与文字处于同一段落时，文字作为图片说明 */
+.md-content p:has(> a > img) {
+    text-align: center;
+    color: var(--muted);
+}
+
 @media (min-width: 640px) {
     .md-content p:has(> a > img) {
         margin-left: -2.75rem;
