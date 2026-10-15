@@ -4,8 +4,13 @@ import PostRow from '../components/PostRow.astro'
 import { getSortedPosts } from '../utils/posts'
 import { SITE_TITLE } from '../consts'
 
-const posts = await getSortedPosts()
-const years = [...new Set(posts.map((p) => p.data.pubDate.getFullYear()))]
+const posts = (await getSortedPosts()).sort(
+    (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
+)
+
+const years = [
+    ...new Set(posts.map((p) => p.data.pubDate.getFullYear())),
+].sort((a, b) => b - a)
 ---
 
 <BaseLayout title={`Archive - ${SITE_TITLE}`} hero="half">
