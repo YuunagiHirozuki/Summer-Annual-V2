@@ -184,7 +184,9 @@ for (const article of articles) {
         continue
     }
     if (usedSlugs.has(article.slug)) {
-        fail(`slug 重复: "${article.slug}"。文章文件夹名（或平铺文件名）全仓库必须唯一。`)
+        fail(
+            `slug 重复: "${article.slug}"。文章文件夹名（或平铺文件名）全仓库必须唯一。`
+        )
     }
     usedSlugs.add(article.slug)
     queue.push(article)
@@ -201,6 +203,43 @@ function copyImages(imagesDir, destDir) {
         // 不用 cpSync：Windows 上它对含中文的源路径 + \?\ 扩展路径有缺陷
         writeFileSync(join(destDir, name), readFileSync(join(imagesDir, name)))
     }
+}
+
+/**
+ * 将 Obsidian 图片嵌入语法转换为标准 Markdown 图片语法。
+ * 图片统一从当前文章的 images/ 目录查找。
+ *
+ * ![[photo.jpg]]         -> ![](./images/photo.jpg)
+ * ![[photo.jpg|封面图]]  -> ![封面图](./images/photo.jpg)
+ */
+function convertObsidianImages(text, articleDir, slug) {
+    return text.replace(/!\[\[([^\]]+)\]\]/g, (match, content) => {
+        const parts = content.split('|')
+        const target = parts[0].trim()
+        const alt = (parts[1] ?? '').trim()
+
+        // 只处理受支持的图片格式，其他 Wiki 嵌入保持原样
+        if (!IMAGE_EXTENSIONS.has(extname(target).toLowerCase())) {
+            return match
+        }
+
+        // 兼容显式写出的 ./images/ 路径
+        const name = basename(target.replace(/\\/g, '/'))
+        const sourcePath = join(articleDir, 'images', name)
+
+        if (!existsSync(sourcePath)) {
+            console.warn(`[import-content] 图片不存在: ${slug}/images/${name}`)
+            return match
+        }
+
+        const imagePath = `./images/${encodeURIComponent(name)}`
+        const escapedAlt = alt
+            .replace(/\\/g, '\\\\')
+            .replace(/\[/g, '\\[')
+            .replace(/\]/g, '\\]')
+
+        return `![${escapedAlt}](${imagePath})`
+    })
 }
 
 function inject(text, category) {
@@ -227,11 +266,20 @@ for (const article of queue) {
 
     if (article.dir !== undefined) {
         const source = join(article.dir, article.indexName)
-        const text = inject(readFileSync(source, 'utf8'), article.category)
+        const rawText = readFileSync(source, 'utf8')
+        const convertedText = convertObsidianImages(
+            rawText,
+            article.dir,
+            article.slug
+        )
+        const text = inject(convertedText, article.category)
         writeFileSync(join(destDir, article.indexName), text)
         copyImages(join(article.dir, 'images'), join(destDir, 'images'))
     } else {
-        const text = inject(readFileSync(article.file, 'utf8'), article.category)
+        const text = inject(
+            readFileSync(article.file, 'utf8'),
+            article.category
+        )
         writeFileSync(join(destRoot, article.slug + article.ext), text)
     }
 
