@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 import rehypeSlug from 'rehype-slug'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import icon from 'astro-icon'
+import remarkBreaks from 'remark-breaks'
 
 // https://astro.build/config
 export default defineConfig({
@@ -17,6 +18,7 @@ export default defineConfig({
         plugins: [tailwindcss()],
     },
     markdown: {
+        remarkPlugins: [remarkBreaks],
         rehypePlugins: [
             rehypeSlug, // 给所有标题自动添加 id
             [
