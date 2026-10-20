@@ -37,7 +37,10 @@ const posts = defineCollection({
                     return image().parse(val)
                 }),
             categories: z.string().optional(),
-            tags: z.array(z.string()).optional(),
+            tags: z.preprocess(
+                (val) => (val == null || val === '' ? [] : val),
+                z.array(z.string()).default([])
+            ),
             draft: z.boolean().default(false),
             pinned: z.boolean().default(false),
         }),
