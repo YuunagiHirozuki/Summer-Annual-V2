@@ -17,65 +17,78 @@ const languageNames: Record<string, string> = {
 }
 
 function initCodeBlocks() {
-    document.querySelectorAll<HTMLPreElement>('.md-content pre').forEach((pre) => {
-        if (pre.dataset.toolbar) return
-        pre.dataset.toolbar = '1'
+    document
+        .querySelectorAll<HTMLPreElement>('.md-content pre')
+        .forEach((pre) => {
+            if (pre.dataset.toolbar) return
+            pre.dataset.toolbar = '1'
 
-        const code = pre.querySelector('code')
+            const code = pre.querySelector('code')
 
-        const rawLang =
-            pre.getAttribute('data-language') ||
-            code?.className.match(/language-([\w-]+)/)?.[1] ||
-            ''
+            const rawLang =
+                pre.getAttribute('data-language') ||
+                code?.className.match(/language-([\w-]+)/)?.[1] ||
+                ''
 
-        const lang =
-            rawLang.toLowerCase() === 'plaintext'
-                ? ''
-                : rawLang
+            const lang = rawLang.toLowerCase() === 'plaintext' ? '' : rawLang
 
-        const displayLang =
-            languageNames[lang.toLowerCase()] ?? lang
+            const displayLang = languageNames[lang.toLowerCase()] ?? lang
 
-        const wrapper = document.createElement('div')
-        wrapper.className = 'code-block'
+            const wrapper = document.createElement('div')
+            wrapper.className = 'code-block'
 
-        const header = document.createElement('div')
-        header.className = 'code-header'
+            const header = document.createElement('div')
+            header.className = 'code-header'
 
-        const btn = document.createElement('button')
-        btn.type = 'button'
-        btn.className = 'code-copy'
-        btn.setAttribute('aria-label', '复制')
+            const btn = document.createElement('button')
+            btn.type = 'button'
+            btn.className = 'code-copy'
+            btn.setAttribute('aria-label', '复制')
 
-        // 有语言：显示语言名
-        // 无语言：显示复制图标
-        const hasLanguage = Boolean(displayLang)
+            // 有语言：显示语言名
+            // 无语言：显示复制图标
+            const hasLanguage = Boolean(displayLang)
 
-        const resetButton = () => {
-            btn.innerHTML = hasLanguage
-                ? `<span class="code-lang">${displayLang}</span>`
-                : '<i class="mi-copy"></i>'
-        }
-        
-        resetButton()
+            const resetButton = () => {
+                btn.replaceChildren()
 
-        btn.addEventListener('click', async () => {
-            try {
-                await navigator.clipboard.writeText(code?.innerText ?? '')
-                btn.innerHTML = '<i class="mi-check"></i>'
-            } catch {
-                btn.innerHTML = '<i class="mi-warning"></i>'
+                if (hasLanguage) {
+                    const lang = document.createElement('span')
+                    lang.className = 'code-lang'
+                    lang.textContent = displayLang
+                    btn.appendChild(lang)
+                } else {
+                    const icon = document.createElement('i')
+                    icon.className = 'mi-copy'
+                    btn.appendChild(icon)
+                }
             }
 
-            setTimeout(resetButton, 1500)
+            resetButton()
+
+            const setButtonIcon = (iconClass: string) => {
+                const icon = document.createElement('i')
+                icon.className = iconClass
+                btn.replaceChildren(icon)
+            }
+
+            btn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(code?.innerText ?? '')
+                    setButtonIcon('mi-check')
+                } catch {
+                    setButtonIcon('mi-warning')
+                }
+
+                setTimeout(resetButton, 1500)
+            })
+
+            header.appendChild(btn)
+
+            pre.replaceWith(wrapper)
+            wrapper.appendChild(header)
+            wrapper.appendChild(pre)
         })
-
-        header.appendChild(btn)
-
-        pre.replaceWith(wrapper)
-        wrapper.appendChild(header)
-        wrapper.appendChild(pre)
-    })
 }
 
 document.addEventListener('astro:page-load', initCodeBlocks)
