@@ -39,9 +39,6 @@ const visiblePosts = sortedPosts.slice(
         <div class="hidden xl:block" aria-hidden="true"></div>
 
         <div class="mx-auto w-full max-w-180 min-w-0">
-            <h2 class="mb-10 flex items-center justify-center text-2xl font-bold">
-                BLOG
-            </h2>
 
             <div class="grid gap-6">
                 {visiblePosts.map((post) => <PostCard post={post} />)}
@@ -51,7 +48,7 @@ const visiblePosts = sortedPosts.slice(
         </div>
 
         {/* 侧栏列：TAGS + COLLECTION 竖排，仅 xl 屏显示并吸附 */}
-        <div class="mx-auto flex w-full max-w-180 min-w-0 flex-col gap-4 self-start xl:sticky xl:top-24 xl:w-72 xl:max-w-none xl:shrink-0">
+        <div class="mx-auto flex w-full max-w-180 min-w-0 flex-col gap-4 self-start xl:mx-0 xl:sticky xl:top-24 xl:w-72 xl:max-w-none xl:shrink-0">
             <CollectionWidget />
             <TagWidget />
         </div>
