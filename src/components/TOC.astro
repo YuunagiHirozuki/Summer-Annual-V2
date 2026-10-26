@@ -56,14 +56,13 @@
     const SCROLL_OFFSET = 96 // 固定导航高度 + 余量
 
     function initTOC() {
-        const toc = document.getElementById('toc-card')
         const tocList = document.getElementById('toc-list')
         const drawerList = document.getElementById('drawer-toc')
         const drawerSection = document.getElementById('drawer-toc-section')
         const article = document.querySelector('article')
         const content = article?.querySelector('.md-content')
 
-        if (!toc || !tocList || !content) return
+        if (!tocList || !content) return
 
         // 只收录正文里的标题，避免把 Comments 等界面标题算进目录
         const headings = Array.from(
@@ -73,15 +72,11 @@
         // 防止客户端导航重复生成
         tocList.innerHTML = ''
 
-        // 没有标题时隐藏侧栏 TOC 与抽屉目录区
+        // 没有标题时：抽屉目录区隐藏（toc-card 本身 hidden xl:block，无需脚本干预）
         if (headings.length === 0) {
-            toc.classList.add('hidden')
-            toc.classList.remove('xl:block')
             drawerSection?.classList.add('hidden')
             return
         }
-        toc.classList.remove('hidden')
-        toc.classList.add('xl:block')
         drawerSection?.classList.remove('hidden')
 
         for (const [i, heading] of headings.entries()) {
