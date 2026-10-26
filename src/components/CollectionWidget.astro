@@ -7,7 +7,7 @@ const categories = getCategories(posts)
 
 {
     categories.length > 0 && (
-        <section class="order-1 rounded-sm bg-surface p-4 shadow-xs xl:order-2">
+        <section class="rounded-sm bg-surface p-4 shadow-xs">
             <h3 class="mb-3 text-base font-semibold">COLLECTION</h3>
             <ul class="space-y-1">
                 {categories.map(([cat, count]) => (
