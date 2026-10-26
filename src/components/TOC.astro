@@ -58,6 +58,8 @@
     function initTOC() {
         const toc = document.getElementById('toc-card')
         const tocList = document.getElementById('toc-list')
+        const drawerList = document.getElementById('drawer-toc')
+        const drawerSection = document.getElementById('drawer-toc-section')
         const article = document.querySelector('article')
         const content = article?.querySelector('.md-content')
 
@@ -71,24 +73,29 @@
         // 防止客户端导航重复生成
         tocList.innerHTML = ''
 
-        // 没有标题时隐藏整个 TOC
+        // 没有标题时隐藏侧栏 TOC 与抽屉目录区
         if (headings.length === 0) {
             toc.classList.add('hidden')
             toc.classList.remove('xl:block')
+            drawerSection?.classList.add('hidden')
             return
         }
         toc.classList.remove('hidden')
         toc.classList.add('xl:block')
+        drawerSection?.classList.remove('hidden')
 
         for (const [i, heading] of headings.entries()) {
             if (!heading.id) heading.id = `heading-${i}`
-            const li = document.createElement('li')
-            li.dataset.level = String(Number(heading.tagName[1]))
-            const a = document.createElement('a')
-            a.href = `#${heading.id}`
-            a.textContent = heading.textContent ?? ''
-            li.appendChild(a)
-            tocList.appendChild(li)
+            for (const list of [tocList, drawerList]) {
+                if (!list) continue
+                const li = document.createElement('li')
+                li.dataset.level = String(Number(heading.tagName[1]))
+                const a = document.createElement('a')
+                a.href = `#${heading.id}`
+                a.textContent = heading.textContent ?? ''
+                li.appendChild(a)
+                list.appendChild(li)
+            }
         }
 
         updateActiveTocEntry()
@@ -96,9 +103,8 @@
 
     /** 阅读进度：取视口顶线上方最近的标题，在目录里高亮它 */
     function updateActiveTocEntry() {
-        const tocList = document.getElementById('toc-list')
         const content = document.querySelector('article .md-content')
-        if (!tocList || !content) return
+        if (!content) return
 
         const headings = Array.from(
             content.querySelectorAll('h2, h3, h4, h5')
@@ -121,7 +127,7 @@
             current = headings[headings.length - 1]
         }
 
-        for (const a of tocList.querySelectorAll('a')) {
+        for (const a of document.querySelectorAll('.toc-list a')) {
             a.classList.toggle(
                 'toc-active',
                 !!current && a.getAttribute('href') === `#${current.id}`

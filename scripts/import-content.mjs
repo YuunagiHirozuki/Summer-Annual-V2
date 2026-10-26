@@ -131,6 +131,27 @@ for (const entry of readdirSync(repoPath)) {
         continue
     }
 
+    // 根目录文件夹内有唯一的 md = 无分类文章（md 文件名自由）
+    const rootMds = readdirSync(full).filter(
+        (f) =>
+            !f.startsWith('.') &&
+            MD_EXTENSIONS.has(extname(f).toLowerCase())
+    )
+    if (rootMds.length === 1) {
+        articles.push({
+            dir: full,
+            slug: entry.replace(/\s+/g, '-'),
+            category: null,
+            indexName: rootMds[0],
+        })
+        continue
+    }
+    if (rootMds.length > 1) {
+        console.warn(
+            `[import-content] 跳过 ${entry}：根目录文件夹内有多个 md 文件且没有 index.md，无法确定正文`
+        )
+    }
+
     // 一级目录 = 分类，二级目录 = 文章（严格两级）
     for (const child of readdirSync(full)) {
         if (child.startsWith('.') || SKIP_DIRS.has(child)) continue
@@ -148,9 +169,24 @@ for (const entry of readdirSync(repoPath)) {
             continue
         }
         if (!isArticleDir(childFull)) {
-            console.warn(
-                `[import-content] 跳过 ${entry}/${child}：目录里没有 index.md（文章必须是 分类/文章名/index.md 两级结构）`
+            // md 文件名自由化：没有 index.md 时，取目录内唯一的 md 作为正文
+            const mds = readdirSync(childFull).filter(
+                (f) =>
+                    !f.startsWith('.') &&
+                    MD_EXTENSIONS.has(extname(f).toLowerCase())
             )
+            if (mds.length === 1) {
+                articles.push({
+                    dir: childFull,
+                    slug: child.replace(/\s+/g, '-'),
+                    category: entry,
+                    indexName: mds[0],
+                })
+            } else {
+                console.warn(
+                    `[import-content] 跳过 ${entry}/${child}：目录里没有 index.md${mds.length > 1 ? '且有多个 md 文件' : ''}`
+                )
+            }
             continue
         }
         articles.push({

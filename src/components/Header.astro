@@ -158,6 +158,18 @@ const links = [
                 </a>
             ))
         }
+        <!-- 本文目录（手机端）：有标题的文章由 TOC 脚本填充，与导航链接隔开一行 -->
+        <div
+            id="drawer-toc-section"
+            class="mt-6 hidden border-t border-border pt-4"
+        >
+            <p
+                class="mb-2 px-2 text-xs font-semibold tracking-wider text-muted uppercase"
+            >
+                本文目录
+            </p>
+            <ul id="drawer-toc" class="toc-list space-y-1"></ul>
+        </div>
     </div>
 </aside>
 
