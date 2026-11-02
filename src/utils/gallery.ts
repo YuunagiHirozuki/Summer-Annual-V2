@@ -11,6 +11,8 @@ export interface GalleryImage {
     /** 全图版（宽 2560px，灯箱点开时才加载） */
     full: string
     alt: string
+    /** 上传时间戳：排序用，新的在前 */
+    uploadedAt: number
 }
 
 const IMAGE_EXTENSIONS = /\.(png|jpe?g|webp|gif|avif)$/i
@@ -75,15 +77,22 @@ export async function getGalleryImages(): Promise<GalleryImage[]> {
             }
 
             const xml = await res.text()
-            for (const match of xml.matchAll(/<Key>([^<]+)<\/Key>/g)) {
-                const key = decodeXmlEntities(match[1])
+            for (const block of xml.matchAll(/<Contents>[\s\S]*?<\/Contents>/g)) {
+                const entry = block[0]
+                const keyMatch = entry.match(/<Key>([^<]+)<\/Key>/)
+                if (!keyMatch) continue
+                const key = decodeXmlEntities(keyMatch[1])
                 if (!IMAGE_EXTENSIONS.test(key)) continue
                 const filename = key.split('/').pop() ?? key
                 const fullKey = key.replace('gallery/', 'gallery-full/')
+                const lastModified = entry.match(/<LastModified>([^<]+)<\/LastModified>/)
                 images.push({
                     src: `${publicBase}/${key}`,
                     full: `${publicBase}/${fullKey}`,
                     alt: decodeXmlEntities(filename.replace(IMAGE_EXTENSIONS, '')),
+                    uploadedAt: lastModified
+                        ? Date.parse(decodeXmlEntities(lastModified[1]))
+                        : 0,
                 })
             }
 
@@ -96,8 +105,9 @@ export async function getGalleryImages(): Promise<GalleryImage[]> {
         return []
     }
 
-    // 按 key 降序：编号大的（最新的）排前面
-    return images.sort((a, b) =>
-        b.src.localeCompare(a.src, undefined, { numeric: true })
-    )
+    // 新的在前（上传时间降序）；同一时刻按 key 的数字感知降序稳定裁决
+    return images.sort((a, b) => {
+        if (a.uploadedAt !== b.uploadedAt) return b.uploadedAt - a.uploadedAt
+        return b.src.localeCompare(a.src, undefined, { numeric: true })
+    })
 }
