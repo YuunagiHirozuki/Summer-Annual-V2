@@ -21,22 +21,27 @@
     margin: 2em 0 0.7em;
 }
 
-.md-content h2 {
+/* 正文 h1 单独定尺寸（否则落到 base.css 兜底的 2.25em，偏大） */
+.md-content h1 {
     font-size: 1.5em;
+}
+
+.md-content h2 {
+    font-size: 1.25em;
     padding-bottom: 0.35em;
     border-bottom: 1px solid var(--border);
 }
 
 .md-content h3 {
-    font-size: 1.25em;
-}
-
-.md-content h4 {
     font-size: 1.1em;
 }
 
-.md-content h5 {
+.md-content h4 {
     font-size: 1em;
+}
+
+.md-content h5 {
+    font-size: 0.9em;
 }
 
 /* 标题锚点（rehype-autolink-headings append） */
