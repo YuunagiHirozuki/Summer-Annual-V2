@@ -2,7 +2,7 @@
 // 画廊上传脚本：压缩（双尺寸）→ 上传 R2
 //
 // 用法：
-//   pnpm gallery:upload                 ← 使用默认收件箱（文章仓库旁 gallery-inbox/，不存在则自动创建）
+//   pnpm gallery:upload                 ← 使用默认收件箱（文章仓库旁 .gallery-inbox/，不存在则自动创建）
 //   node scripts/gallery-upload.mjs <图片文件或目录...> [--dry-run]
 //   pnpm gallery:upload ./我的画 --dry-run
 //
@@ -30,13 +30,13 @@ const KB = 1024
 const dryRun = process.argv.includes('--dry-run')
 const args = process.argv.slice(2).filter((a) => a !== '--dry-run')
 
-/** 默认收件箱：文章仓库旁的 gallery-inbox（与内容资产同区） */
+/** 默认收件箱：文章仓库旁的 .gallery-inbox（点前缀，Obsidian 里不显示） */
 const DEFAULT_INBOX = resolve(
     fileURLToPath(new URL('..', import.meta.url)), // 网站仓库根
     '..',
     '..',
     '-Summer-Annual-Blog-Article',
-    'gallery-inbox'
+    '.gallery-inbox'
 )
 
 let inputs = args
