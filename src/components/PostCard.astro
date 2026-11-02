@@ -49,7 +49,7 @@ const href = `/posts/${post.id}/`
         </h2>
         <p class="mb-2 text-sm text-muted">
             {formatDate(post.data.pubDate)}
-            {post.data.categories && `· ${post.data.categories}`}
+            {post.data.categories && ` · ${post.data.categories}`}
         </p>
         <p class="text-sm leading-relaxed text-muted">
             {post.data.description}
