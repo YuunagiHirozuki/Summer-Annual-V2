@@ -35,7 +35,7 @@ const href = `/posts/${post.id}/`
 
     <div class="p-6">
         <h2
-            class="mb-2 text-2xl font-bold transition-colors duration-300 group-hover:text-aqua"
+            class="text-2xl font-bold transition-colors duration-300 group-hover:text-aqua"
         >
             {post.data.pinned && (
                 <i
@@ -47,11 +47,11 @@ const href = `/posts/${post.id}/`
                 {post.data.title}
             </a>
         </h2>
-        <p class="mb-2 text-sm opacity-70">
+        <p class="mb-2 text-sm text-muted">
             {formatDate(post.data.pubDate)}
             {post.data.categories && `· ${post.data.categories}`}
         </p>
-        <p class="text-base leading-relaxed opacity-90">
+        <p class="text-base leading-relaxed text-muted">
             {post.data.description}
         </p>
         {
