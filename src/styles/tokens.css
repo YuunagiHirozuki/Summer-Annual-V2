@@ -29,6 +29,9 @@
     --code-bg: #24292e;
     --code-fg: #e4e7ec;
 
+    /* 全站微动效的缓动：起步利落、收势轻柔、无过冲（M3 emphasized） */
+    --ease-breeze: cubic-bezier(0.2, 0, 0, 1);
+
     /* 悬浮在 hero 图片上的元素颜色：黑白两主题下都不随主题切换，
        按 hero 实际图片手动调整这一个值即可 */
     --on-hero: #ffffff;

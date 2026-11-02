@@ -45,7 +45,7 @@
     color: var(--muted);
     text-decoration: none;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s var(--ease-breeze);
 }
 
 .md-content :is(h1, h2, h3, h4, h5):hover .heading-anchor {
@@ -223,8 +223,8 @@
     pointer-events: auto;
 
     transition:
-        color 0.2s ease,
-        background-color 0.2s ease;
+        color 0.2s var(--ease-breeze),
+        background-color 0.2s var(--ease-breeze);
 }
 
 .code-copy:hover {
