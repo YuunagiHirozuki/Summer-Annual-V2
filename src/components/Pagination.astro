@@ -33,18 +33,25 @@ const nextPageHref =
 ---
 
 <div class="mt-8 flex items-center justify-center space-x-2">
-    <!-- 上一页 -->
-    <a
-        href={prevPageHref}
-        aria-label="上一页"
-        class={`flex h-9 w-9 items-center justify-center rounded transition-colors duration-300 ${
-            !prevPageHref
-                ? 'pointer-events-none cursor-not-allowed bg-surface text-muted'
-                : 'bg-surface text-aqua hover:bg-aqua hover:text-aqua-contrast'
-        }`}
-    >
-        <i class="mi-chevron-left text-inherit"></i>
-    </a>
+    <!-- 上一页（禁用时渲染 span：无 href 的 <a> 不是链接，挂 aria-label 属违规且不可抓取） -->
+    {
+        prevPageHref ? (
+            <a
+                href={prevPageHref}
+                aria-label="上一页"
+                class="flex h-9 w-9 items-center justify-center rounded bg-surface text-aqua transition-colors duration-300 hover:bg-aqua hover:text-aqua-contrast"
+            >
+                <i class="mi-chevron-left text-inherit"></i>
+            </a>
+        ) : (
+            <span
+                aria-hidden="true"
+                class="flex h-9 w-9 items-center justify-center rounded bg-surface text-muted"
+            >
+                <i class="mi-chevron-left"></i>
+            </span>
+        )
+    }
 
     <!-- 中间页 -->
     {
@@ -66,15 +73,22 @@ const nextPageHref =
     }
 
     <!-- 下一页 -->
-    <a
-        href={nextPageHref}
-        aria-label="下一页"
-        class={`flex h-9 w-9 items-center justify-center rounded transition-colors duration-300 ${
-            !nextPageHref
-                ? 'pointer-events-none cursor-not-allowed bg-surface text-muted'
-                : 'bg-surface text-aqua hover:bg-aqua hover:text-aqua-contrast'
-        }`}
-    >
-        <i class="mi-chevron-right text-inherit"></i>
-    </a>
+    {
+        nextPageHref ? (
+            <a
+                href={nextPageHref}
+                aria-label="下一页"
+                class="flex h-9 w-9 items-center justify-center rounded bg-surface text-aqua transition-colors duration-300 hover:bg-aqua hover:text-aqua-contrast"
+            >
+                <i class="mi-chevron-right text-inherit"></i>
+            </a>
+        ) : (
+            <span
+                aria-hidden="true"
+                class="flex h-9 w-9 items-center justify-center rounded bg-surface text-muted"
+            >
+                <i class="mi-chevron-right"></i>
+            </span>
+        )
+    }
 </div>
