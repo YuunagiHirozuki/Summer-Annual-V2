@@ -58,20 +58,21 @@
         scroll-margin-top: 5.5rem;
     }
 
+    /* 兜底阶梯：按 5/6 等比缩放（h1 30px 起算），仅用于未声明字号类的标题 */
     h1 {
         font-size: 1.875em;
     }
     h2 {
-        font-size: 2em;
+        font-size: 1.667em;
     }
     h3 {
-        font-size: 1.5em;
+        font-size: 1.25em;
     }
     h4 {
-        font-size: 1.3em;
+        font-size: 1.083em;
     }
     h5 {
-        font-size: 1.25em;
+        font-size: 1.042em;
     }
 
     strong,
