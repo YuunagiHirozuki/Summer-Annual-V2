@@ -1,6 +1,6 @@
 # Summer Annual（V2）
 
-个人网站：Astro 5 + Tailwind CSS 4 + TypeScript，部署到 Cloudflare Pages。
+个人网站：Astro 7 + Tailwind CSS 4 + TypeScript，部署到 Cloudflare Pages。
 文章源文件放在私有仓库 [Summer-Annual-Blog-Article]，构建时自动导入。
 
 ## 命令
