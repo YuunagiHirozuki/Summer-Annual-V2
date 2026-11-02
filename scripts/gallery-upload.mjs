@@ -82,7 +82,8 @@ for (const input of inputs) {
     const s = await stat(p)
     if (s.isDirectory()) {
         const dir = await readdir(p)
-        for (const f of dir) if (IMAGE_EXT.test(f)) files.push(join(p, f))
+        // 显式按文件名排序：批内处理顺序 = 上传时间顺序（画廊排序的平局裁决依据）
+        for (const f of dir.sort()) if (IMAGE_EXT.test(f)) files.push(join(p, f))
     } else {
         files.push(p)
     }
