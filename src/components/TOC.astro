@@ -132,7 +132,7 @@
         // 高亮条目跟随滚动进入目录可视区。
         // 不用 scrollIntoView：sticky 容器内浏览器对它的滚动计算不可靠，
         // 手动调整目录自身的 scrollTop
-        const active = tocList.querySelector<HTMLAnchorElement>('a.toc-active')
+        const active = document.querySelector<HTMLAnchorElement>('.toc-list a.toc-active')
         const tocCard = document.getElementById('toc-card')
         if (active && tocCard) {
             const top = active.offsetTop

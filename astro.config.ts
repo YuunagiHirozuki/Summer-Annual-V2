@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config'
 import mdx from '@astrojs/mdx'
+import { unified } from '@astrojs/markdown-remark'
 import sitemap from '@astrojs/sitemap'
 import tailwindcss from '@tailwindcss/vite'
 import rehypeSlug from 'rehype-slug'
@@ -18,16 +19,19 @@ export default defineConfig({
         plugins: [tailwindcss()],
     },
     markdown: {
-        remarkPlugins: [remarkBreaks],
-        rehypePlugins: [
-            rehypeSlug, // 给所有标题自动添加 id
-            [
-                rehypeAutolinkHeadings, // 给标题加锚点
-                {
-                    behavior: 'append',
-                    properties: { class: 'heading-anchor' },
-                },
+        // Astro 7 默认使用 Sätteri 处理器；remark/rehype 插件需通过 unified() 显式传入
+        processor: unified({
+            remarkPlugins: [remarkBreaks],
+            rehypePlugins: [
+                rehypeSlug, // 给所有标题自动添加 id
+                [
+                    rehypeAutolinkHeadings, // 给标题加锚点
+                    {
+                        behavior: 'append',
+                        properties: { class: 'heading-anchor' },
+                    },
+                ],
             ],
-        ],
+        }),
     },
 })
