@@ -9,7 +9,8 @@
     margin-top: 0;
 }
 
-/* ===== 标题层级：层级差明显、上间距大于下间距，形成呼吸感 ===== */
+/* ===== 标题层级：层级差明显、上间距大于下间距，形成呼吸感 =====
+   正文从 h2 起用（文章大标题由 ArticleLayout 的 h1 负责） */
 
 .md-content h1,
 .md-content h2,
@@ -21,27 +22,22 @@
     margin: 2em 0 0.7em;
 }
 
-/* 正文 h1 单独定尺寸（否则落到 base.css 兜底的 2.25em，偏大） */
-.md-content h1 {
-    font-size: 1.5em;
-}
-
 .md-content h2 {
-    font-size: 1.25em;
+    font-size: 1.5em;
     padding-bottom: 0.35em;
     border-bottom: 1px solid var(--border);
 }
 
 .md-content h3 {
-    font-size: 1.1em;
+    font-size: 1.25em;
 }
 
 .md-content h4 {
-    font-size: 1em;
+    font-size: 1.1em;
 }
 
 .md-content h5 {
-    font-size: 0.9em;
+    font-size: 1em;
 }
 
 /* 标题锚点（rehype-autolink-headings append） */
