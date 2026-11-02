@@ -9,6 +9,7 @@
         "preview": "astro preview",
         "astro": "astro",
         "check": "astro check",
+        "gallery:upload": "node scripts/gallery-upload.mjs",
         "postbuild": "pagefind --site dist"
     },
     "dependencies": {

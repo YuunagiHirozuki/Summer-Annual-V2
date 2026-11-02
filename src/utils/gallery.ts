@@ -6,7 +6,10 @@
 import { AwsClient } from 'aws4fetch'
 
 export interface GalleryImage {
+    /** 预览版（宽 1200px，网格加载用） */
     src: string
+    /** 全图版（宽 2560px，灯箱点开时才加载） */
+    full: string
     alt: string
 }
 
@@ -76,8 +79,10 @@ export async function getGalleryImages(): Promise<GalleryImage[]> {
                 const key = decodeXmlEntities(match[1])
                 if (!IMAGE_EXTENSIONS.test(key)) continue
                 const filename = key.split('/').pop() ?? key
+                const fullKey = key.replace('gallery/', 'gallery-full/')
                 images.push({
                     src: `${publicBase}/${key}`,
+                    full: `${publicBase}/${fullKey}`,
                     alt: decodeXmlEntities(filename.replace(IMAGE_EXTENSIONS, '')),
                 })
             }

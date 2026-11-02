@@ -41,17 +41,25 @@ scripts/
 `draft: true` 不会发布。仓库根目录的 `_template.md` 是 front matter 模板。
 完整格式见文章仓库的 README。
 
-## 画廊（图片存 Cloudflare R2）
+## 画廊（图片存 Cloudflare R2，双尺寸）
 
 1. Cloudflare 建一个 R2 bucket，在 bucket 设置里开启公开访问（r2.dev 域名）
-2. R2 → Manage R2 API Tokens → 创建一个 **Object Read** 权限的 API Token，
-   把 Access Key ID / Secret Access Key 配到网站仓库 Secrets
-3. 把图片上传到 bucket 的 `gallery/` 目录（png/jpg/webp/gif/avif，
-   文件名排序即展示顺序，建议 `01-xxx.png` 编号命名）
+2. R2 → Manage R2 API Tokens → 创建一个 **Object Read & Write** 权限的
+   API Token，把 Access Key ID / Secret Access Key 配到本地 `.env`
+   （CI 只需要读权限，仓库 Secrets 里配 Object Read 即可）
+3. 原图（png/jpg，建议 2000px 以上）放进任意文件夹，跑：
+
+   ```bash
+   pnpm gallery:upload <图片文件夹>
+   ```
+
+   脚本自动压缩成两版并上传：`gallery/` 预览版（宽 1200，网格用，
+   100KB 上下）、`gallery-full/` 全图版（宽 2560，灯箱放大用，约
+   0.5–2MB），透明图保留 PNG，其余转 JPG，单张不超过 5MB
 4. 触发一次构建：网站仓库 Actions 手动 Run
 
 画廊页在构建时通过 S3 接口列出 bucket 的 `gallery/` 对象，
-所以图片上传本身不需要动任何仓库。
+网格加载预览版，灯箱点开才加载 `gallery-full/` 全图版。
 
 ## 部署（.github/workflows/deploy.yml）
 

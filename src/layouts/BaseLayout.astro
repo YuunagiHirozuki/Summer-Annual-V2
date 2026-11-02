@@ -101,7 +101,10 @@ const { title, description, hero = 'half', heroImage } = Astro.props
                 img.replaceWith(anchor)
                 anchor.appendChild(img)
             }
-            anchor.dataset.pswpSrc = anchor.href
+            // 画廊的锚点已在服务端声明全图版地址，不覆盖
+            if (!anchor.dataset.pswpSrc) {
+                anchor.dataset.pswpSrc = anchor.href
+            }
             setDims()
             if (!img.complete) {
                 img.addEventListener('load', setDims, { once: true })

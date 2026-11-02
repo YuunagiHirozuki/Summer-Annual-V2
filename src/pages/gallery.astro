@@ -16,7 +16,7 @@ const artworks = await getGalleryImages()
                     {artworks.map((art) => (
                         <a
                             href={art.src}
-                            data-pswp-src={art.src}
+                            data-pswp-src={art.full}
                             class="mb-8 block break-inside-avoid"
                         >
                             <img
