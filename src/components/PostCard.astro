@@ -60,7 +60,7 @@ const href = `/posts/${post.id}/`
                     {post.data.tags.map((tag: string) => (
                         <a
                             href={`/tags/${encodeURIComponent(tag)}/`}
-                            class="rounded-md bg-tag-bg px-2 py-1 no-underline opacity-80 transition-colors duration-300 hover:text-aqua"
+                            class="rounded-md bg-tag-bg px-2 py-1 no-underline text-muted transition-colors duration-300 hover:text-aqua"
                         >
                             #{tag}
                         </a>
