@@ -51,7 +51,7 @@ const href = `/posts/${post.id}/`
             {formatDate(post.data.pubDate)}
             {post.data.categories && ` · ${post.data.categories}`}
         </p>
-        <p class="text-sm leading-relaxed text-muted">
+        <p class="line-clamp-2 text-sm leading-relaxed text-muted">
             {post.data.description}
         </p>
         {
