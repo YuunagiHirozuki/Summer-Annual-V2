@@ -1,4 +1,6 @@
-/* 元素默认样式：基于 token，全站共享 */
+/* 元素默认样式：基于 token，全站共享。
+   全部放入 @layer base——否则无层级规则会压过 utilities 层，
+   标题上声明的 text-* 字号类永远不会生效 */
 
 @font-face {
     font-family: 'Atkinson';
@@ -16,75 +18,77 @@
     font-display: swap;
 }
 
-html {
+@layer base {
+    html {
+        @media (prefers-reduced-motion: no-preference) {
+            scroll-behavior: smooth;
+        }
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: var(--font-body);
+        font-size: 16px;
+        line-height: 1.7;
+        text-align: left;
+        color: var(--ink);
+        background-color: var(--background);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    /* 主题切换时颜色从容过渡（尊重减少动态偏好） */
     @media (prefers-reduced-motion: no-preference) {
-        scroll-behavior: smooth;
+        body,
+        body * {
+            transition:
+                background-color 0.2s var(--ease-breeze),
+                border-color 0.2s var(--ease-breeze),
+                color 0.2s var(--ease-breeze);
+        }
     }
-}
 
-body {
-    margin: 0;
-    padding: 0;
-    font-family: var(--font-body);
-    font-size: 16px;
-    line-height: 1.7;
-    text-align: left;
-    color: var(--ink);
-    background-color: var(--background);
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
-
-/* 主题切换时颜色从容过渡（尊重减少动态偏好） */
-@media (prefers-reduced-motion: no-preference) {
-    body,
-    body * {
-        transition:
-            background-color 0.2s var(--ease-breeze),
-            border-color 0.2s var(--ease-breeze),
-            color 0.2s var(--ease-breeze);
+    ::selection {
+        background: var(--selection);
     }
-}
 
-::selection {
-    background: var(--selection);
-}
+    /* 锚点目标统一避开固定导航 */
+    [id] {
+        scroll-margin-top: 5.5rem;
+    }
 
-/* 锚点目标统一避开固定导航 */
-[id] {
-    scroll-margin-top: 5.5rem;
-}
+    h1 {
+        font-size: 2.25em;
+    }
+    h2 {
+        font-size: 2em;
+    }
+    h3 {
+        font-size: 1.5em;
+    }
+    h4 {
+        font-size: 1.3em;
+    }
+    h5 {
+        font-size: 1.25em;
+    }
 
-h1 {
-    font-size: 2.25em;
-}
-h2 {
-    font-size: 2em;
-}
-h3 {
-    font-size: 1.5em;
-}
-h4 {
-    font-size: 1.3em;
-}
-h5 {
-    font-size: 1.25em;
-}
+    strong,
+    b {
+        font-weight: 700;
+    }
 
-strong,
-b {
-    font-weight: 700;
-}
-
-textarea {
-    width: 100%;
-    font-size: 16px;
-}
-input {
-    font-size: 16px;
-}
-table {
-    width: 100%;
+    textarea {
+        width: 100%;
+        font-size: 16px;
+    }
+    input {
+        font-size: 16px;
+    }
+    table {
+        width: 100%;
+    }
 }
 
 /* ===== 动画 ===== */
