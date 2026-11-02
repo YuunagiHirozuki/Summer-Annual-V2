@@ -26,10 +26,12 @@ const visiblePosts = posts.slice(0, POSTS_PER_PAGE)
         <div class="mx-auto w-full max-w-180 min-w-0">
             <!-- 公告栏 -->
             <div class="mb-6 rounded-sm bg-card p-6 shadow-xs">
-                <p class="text-muted">{SITE_SIGNATURE}</p>
+                <p class="text-ink">{SITE_SIGNATURE}</p>
             </div>
 
             <div class="grid gap-6">
+                {/* 视觉隐藏的 h2：卡片标题为 h3，需要一个 h2 衔接 Hero 的 h1，保证标题层级递减 */}
+                <h2 class="sr-only">文章列表</h2>
                 {visiblePosts.map((post) => <PostCard post={post} />)}
             </div>
 
