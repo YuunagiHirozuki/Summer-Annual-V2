@@ -53,9 +53,10 @@ scripts/
    pnpm gallery:upload <图片文件夹>
    ```
 
-   脚本自动压缩成两版并上传：`gallery/` 预览版（宽 1200，网格用，
-   100KB 上下）、`gallery-full/` 全图版（宽 2560，灯箱放大用，约
-   0.5–2MB），透明图保留 PNG，其余转 JPG，单张不超过 5MB
+   脚本自动压缩成两版并上传：`gallery/` 预览版（宽 1200，网格用）、
+   `gallery-full/` 全图版（宽 2560，灯箱放大用）。输出优先 PNG
+   （调色板量化，透明保留），源图为 JPG 或 PNG 压不进 5MB 时才用
+   JPG，单张控制在 100KB–5MB
 4. 触发一次构建：网站仓库 Actions 手动 Run
 
 画廊页在构建时通过 S3 接口列出 bucket 的 `gallery/` 对象，
