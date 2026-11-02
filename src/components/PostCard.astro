@@ -34,7 +34,7 @@ const href = `/posts/${post.id}/`
     }
 
     <div class="p-6">
-        <h3
+        <h2
             class="mb-2 text-2xl font-bold transition-colors duration-300 group-hover:text-aqua"
         >
             {post.data.pinned && (
@@ -46,7 +46,7 @@ const href = `/posts/${post.id}/`
             <a href={href} class="no-underline transition-colors duration-300">
                 {post.data.title}
             </a>
-        </h3>
+        </h2>
         <p class="mb-2 text-sm opacity-70">
             {formatDate(post.data.pubDate)}
             {post.data.categories && `· ${post.data.categories}`}
