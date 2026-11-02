@@ -4,3 +4,15 @@
 @import './tokens.css';
 @import './base.css';
 @import './prose.css';
+
+/* mono-icons 自带的 @font-face 没有声明 font-display（默认阻塞期最长 3s，
+   图标在慢网络下会隐形）。同名 face 后声明者优先，这里覆盖为 swap；
+   路径直接指向包内文件，由 Vite 打包散列 */
+@font-face {
+    font-family: 'icons';
+    src: url('../../node_modules/mono-icons/iconfont/icons.woff2?441e89e64206c71748e6f20bc8b51d95')
+        format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
