@@ -1,21 +1,16 @@
 ---
-const { serverURL } = Astro.props
 ---
 
 <div id="waline"></div>
 
 <script>
+    // 样式体积小，随页面 CSS 一起加载；JS 大头（约 205KB）动态导入
     import '@waline/client/style'
     import '../styles/waline.css'
-    import { init } from '@waline/client'
+    import type { WalineInstance } from '@waline/client'
 
-    init({
-        el: '#waline',
-        serverURL: 'https://waline-summer-annual.vercel.app',
-        emoji: ['https://unpkg.com/@waline/emojis@1.4.0/tw-emoji'],
-        comment: true,
-        pageview: true,
-    })
+    let waline: WalineInstance | null | undefined
+    let observer: IntersectionObserver | undefined
 
     function initCommentCount() {
         const count = document.querySelector<HTMLElement>('.waline-comment-count')
@@ -38,5 +33,63 @@ const { serverURL } = Astro.props
         })
     }
 
-    initCommentCount()
+    /** 动态导入 Waline：约 205KB 的客户端代码只在评论区首次可见时才下载。
+        ClientRouter 换页会替换 DOM 且模块脚本不会重复执行，
+        必须在每次 astro:page-load 时重建实例（与 PhotoSwipe 同一模式） */
+    async function initWaline() {
+        const el = document.querySelector<HTMLElement>('#waline')
+
+        if (!el) return
+
+        const { init } = await import('@waline/client')
+
+        // 等待导入期间发生换页的话，旧节点已脱离文档，放弃本次初始化
+        if (!el.isConnected) return
+
+        waline?.destroy()
+
+        waline = init({
+            el,
+            serverURL: 'https://waline-summer-annual.vercel.app',
+            emoji: ['https://unpkg.com/@waline/emojis@1.4.0/tw-emoji'],
+            comment: true,
+            pageview: true,
+        })
+
+        initCommentCount()
+    }
+
+    /** 懒加载：评论区即将进入视口时才初始化，
+        避免每篇文章都在打开瞬间下载/执行 Waline 并请求服务端 */
+    function scheduleWaline() {
+        const target = document.querySelector('#waline')
+
+        if (!target) return
+
+        observer?.disconnect()
+
+        if ('IntersectionObserver' in window) {
+            observer = new IntersectionObserver(
+                (entries) => {
+                    if (entries.some((entry) => entry.isIntersecting)) {
+                        observer?.disconnect()
+                        observer = undefined
+                        initWaline()
+                    }
+                },
+                { rootMargin: '300px 0px' }
+            )
+            observer.observe(target)
+        } else {
+            initWaline()
+        }
+    }
+
+    document.addEventListener('astro:page-load', scheduleWaline)
+    document.addEventListener('astro:before-swap', () => {
+        observer?.disconnect()
+        observer = undefined
+        waline?.destroy()
+        waline = undefined
+    })
 </script>
