@@ -7,17 +7,17 @@ const artworks = await getGalleryImages()
 ---
 
 <BaseLayout title={`Gallery - ${SITE_TITLE}`} hero="half">
-    <div class="mx-auto w-full max-w-260 px-4 py-8">
-        <h1 class="text-center text-4xl font-bold">Gallery</h1>
-        <div class="mt-8 mb-4 h-0.5 bg-aqua"></div>
+    <div id="gallery-wall" class="mx-auto w-full max-w-260 px-4 py-8">
+        <h1 class="text-center text-4xl font-bold text-aqua">Gallery</h1>
+        <div class="mt-2 mb-4 h-0.5 bg-aqua/50"></div>
         {
             artworks.length > 0 ? (
-                <div class="gallery-grid columns-1 gap-8 sm:columns-2 lg:columns-3">
+                <div class="gallery-grid columns-3 gap-3 lg:columns-4 lg:gap-4 2xl:columns-5">
                     {artworks.map((art) => (
                         <a
                             href={art.src}
                             data-pswp-src={art.full}
-                            class="mb-8 block break-inside-avoid"
+                            class="mb-4 block break-inside-avoid"
                         >
                             <img
                                 src={art.src}
@@ -41,3 +41,14 @@ const artworks = await getGalleryImages()
         }
     </div>
 </BaseLayout>
+
+<style is:global>
+    /* 画廊墙：去蓝调的中性展墙，页面色彩退后、让作品自己说话。
+       仅在本页（含 #gallery-wall 的页面）生效，其他页面不受影响 */
+    html[data-theme='dark'] body:has(#gallery-wall) {
+        background-color: #1e1f21;
+    }
+    html[data-theme='light'] body:has(#gallery-wall) {
+        background-color: #f7f5f2;
+    }
+</style>
