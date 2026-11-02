@@ -176,7 +176,7 @@
     margin: 1.5em 0;
     border-radius: 4px;
     overflow: hidden;
-    background-color: #24292e;
+    background-color: var(--code-bg);
 }
 
 /* 右上角工具栏，不占代码布局空间 */
@@ -193,7 +193,7 @@
 
     background: transparent;
 
-    color: rgb(228 231 236 / 0.5);
+    color: color-mix(in srgb, var(--code-fg) 50%, transparent);
     font-size: 0.72rem;
     letter-spacing: 0.05em;
 
@@ -215,7 +215,7 @@
     border-radius: 4px;
     background: transparent;
 
-    color: rgb(228 231 236 / 0.55);
+    color: color-mix(in srgb, var(--code-fg) 55%, transparent);
     font-size: 1.2rem;
     line-height: 1;
 
@@ -228,8 +228,8 @@
 }
 
 .code-copy:hover {
-    color: rgb(228 231 236 / 1);
-    background-color: rgb(255 255 255 / 0.1);
+    color: var(--code-fg);
+    background-color: color-mix(in srgb, var(--code-fg) 10%, transparent);
 }
 
 /* 代码区域 */
