@@ -59,6 +59,9 @@ scripts/
    JPG，单张控制在 100KB–5MB
 4. 触发一次构建：网站仓库 Actions 手动 Run
 
+上传成功的原图会自动移入该文件夹的 `uploaded/` 子文件夹——
+inbox 里永远只剩没传过的图，重复跑同一文件夹也只会传新增的。
+
 画廊页在构建时通过 S3 接口列出 bucket 的 `gallery/` 对象，
 网格加载预览版，灯箱点开才加载 `gallery-full/` 全图版。
 

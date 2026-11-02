@@ -36,7 +36,8 @@ if (inputs.length === 0) {
 
 // ---- .env（与 utils/gallery.ts 同一套变量）----
 
-import { readFileSync } from 'node:fs'
+import { readFileSync, mkdirSync, renameSync } from 'node:fs'
+import { dirname } from 'node:path'
 function env(key) {
     const text = readFileSync(
         resolve(fileURLToPath(new URL('..', import.meta.url)), '.env'),
@@ -188,12 +189,14 @@ for (const file of files) {
         )
         if (dryRun) continue
 
+        let ok = true
         for (const [key, body, ext] of [
             [`gallery/${base}.${out.ext}`, out.preview, out.ext],
             [`gallery-full/${base}.${out.ext}`, out.full, out.ext],
         ]) {
             const res = await upload(r2, body, key, contentTypeFor(ext))
             if (!res.ok) {
+                ok = false
                 failed++
                 const text = await res.text().catch(() => '')
                 if (res.status === 403) {
@@ -206,6 +209,13 @@ for (const file of files) {
                     console.error(`  ✗ 上传 ${key} 失败: ${res.status} ${text.slice(0, 200)}`)
                 }
             }
+        }
+
+        // 上传成功的原图移入 uploaded/ 子文件夹，inbox 里只剩没传过的
+        if (ok) {
+            const uploadedDir = join(dirname(file), 'uploaded')
+            mkdirSync(uploadedDir, { recursive: true })
+            renameSync(file, join(uploadedDir, basename(file)))
         }
     } catch (err) {
         failed++
