@@ -41,8 +41,6 @@ const visiblePosts = sortedPosts.slice(
         <div class="mx-auto w-full max-w-180 min-w-0">
 
             <div class="grid gap-6">
-                {/* 视觉隐藏的 h2：卡片标题为 h3，保证标题层级递减（此页无其他 h2） */}
-                <h2 class="sr-only">文章列表</h2>
                 {visiblePosts.map((post) => <PostCard post={post} />)}
             </div>
 

@@ -30,8 +30,6 @@ const visiblePosts = posts.slice(0, POSTS_PER_PAGE)
             </div>
 
             <div class="grid gap-6">
-                {/* 视觉隐藏的 h2：卡片标题为 h3，需要一个 h2 衔接 Hero 的 h1，保证标题层级递减 */}
-                <h2 class="sr-only">文章列表</h2>
                 {visiblePosts.map((post) => <PostCard post={post} />)}
             </div>
 
