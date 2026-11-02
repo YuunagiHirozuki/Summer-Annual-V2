@@ -2,8 +2,9 @@
 // 画廊上传脚本：压缩（双尺寸）→ 上传 R2
 //
 // 用法：
+//   pnpm gallery:upload                 ← 使用默认收件箱（文章仓库旁 gallery-inbox/，不存在则自动创建）
 //   node scripts/gallery-upload.mjs <图片文件或目录...> [--dry-run]
-//   pnpm gallery:upload ./我的画
+//   pnpm gallery:upload ./我的画 --dry-run
 //
 // 产物（均为 jpg；源图带透明通道时保留 png）：
 //   gallery/<名称>.jpg      预览版：宽 1200px，网格用
@@ -27,11 +28,24 @@ const MB = 1024 * 1024
 const KB = 1024
 
 const dryRun = process.argv.includes('--dry-run')
-const inputs = process.argv.slice(2).filter((a) => a !== '--dry-run')
+const args = process.argv.slice(2).filter((a) => a !== '--dry-run')
 
+/** 默认收件箱：文章仓库旁的 gallery-inbox（与内容资产同区） */
+const DEFAULT_INBOX = resolve(
+    fileURLToPath(new URL('..', import.meta.url)), // 网站仓库根
+    '..',
+    '..',
+    '-Summer-Annual-Blog-Article',
+    'gallery-inbox'
+)
+
+let inputs = args
+let usingDefaultInbox = false
 if (inputs.length === 0) {
-    console.error('用法: node scripts/gallery-upload.mjs <图片文件或目录...> [--dry-run]')
-    process.exit(1)
+    mkdirSync(DEFAULT_INBOX, { recursive: true })
+    inputs = [DEFAULT_INBOX]
+    usingDefaultInbox = true
+    console.log(`未指定输入，使用默认收件箱: ${DEFAULT_INBOX}`)
 }
 
 // ---- .env（与 utils/gallery.ts 同一套变量）----
@@ -74,6 +88,10 @@ for (const input of inputs) {
     }
 }
 if (files.length === 0) {
+    if (usingDefaultInbox) {
+        console.log('收件箱里没有图片，无需上传')
+        process.exit(0)
+    }
     console.error('输入里没有找到图片文件')
     process.exit(1)
 }
