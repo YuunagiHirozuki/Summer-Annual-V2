@@ -4,12 +4,18 @@ export type Post = CollectionEntry<'posts'>
 
 export const POSTS_PER_PAGE = 6
 
-/** 站点统一的日期显示格式：YYYY-MM-DD */
+/** 站点统一的日期展示：yyyy年m月dd日；front matter 带具体时间（非 00:00）时追加 hh:mm。
+    纯日期值被 JS 解析为 00:00，借此区分新旧两种写法 */
 export function formatDate(date: Date): string {
     const y = date.getFullYear()
-    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const m = date.getMonth() + 1
     const d = String(date.getDate()).padStart(2, '0')
-    return `${y}-${m}-${d}`
+    if (date.getHours() === 0 && date.getMinutes() === 0) {
+        return `${y}年${m}月${d}日`
+    }
+    const hh = String(date.getHours()).padStart(2, '0')
+    const min = String(date.getMinutes()).padStart(2, '0')
+    return `${y}年${m}月${d}日 ${hh}:${min}`
 }
 
 /** 已发布文章：置顶优先，其余按发布日期倒序 */
