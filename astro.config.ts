@@ -17,6 +17,11 @@ export default defineConfig({
 
     vite: {
         plugins: [tailwindcss()],
+        define: {
+            __VUE_OPTIONS_API__: true,
+            __VUE_PROD_DEVTOOLS__: false,
+            __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
+        },
     },
     markdown: {
         // Astro 7 默认使用 Sätteri 处理器；remark/rehype 插件需通过 unified() 显式传入
