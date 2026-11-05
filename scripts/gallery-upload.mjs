@@ -163,20 +163,12 @@ async function processOne(file) {
     const { hasAlpha } = await detectRealAlpha(file)
     const srcExt = extname(file).toLowerCase()
     // 输出优先 PNG（透明保留 + 调色板量化）；源图本身是 JPG 时沿用 JPG
-    let format = hasAlpha || srcExt === '.png' ? 'png' : 'jpg'
+    const format = hasAlpha || srcExt === '.png' ? 'png' : 'jpg'
     const name = basename(file, extname(file))
 
     // 同时约束宽和高，竖版画不再被单边限制放大像素量
-    let preview = await encodeWithBudget(file, PREVIEW_WIDTH, 1800, format)
-    let full = await encodeWithBudget(file, FULL_WIDTH, 3840, format)
-
-    // PNG 用尽质量/宽度阶梯仍压不进 5MB（细节极多的位图）才退回 JPG//TODO:仍压不进5MB就保持png，不用退回jpg
-    if (format === 'png' && full.buf.length > MAX_BYTES) {
-        console.log(`  ${name}: PNG 超出 5MB 上限，退回 JPG`)
-        format = 'jpg'
-        preview = await encodeWithBudget(file, PREVIEW_WIDTH, 1800, 'jpg')
-        full = await encodeWithBudget(file, FULL_WIDTH, 3840, 'jpg')
-    }
+    const preview = await encodeWithBudget(file, PREVIEW_WIDTH, 1800, format)
+    const full = await encodeWithBudget(file, FULL_WIDTH, 3840, format)
 
     return {
         name,
