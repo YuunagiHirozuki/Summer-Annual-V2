@@ -2,12 +2,12 @@
 
 ```mermaid
 flowchart LR
-    OBS["Obsidian<br/>本地写作"] -->|"git push / 网页拖拽"| REPO["文章仓库（私有）<br/>-Summer-Annual-Blog-Article<br/>posts/&lt;slug&gt;/index.md"]
-    YOU["你"] -->|"面板拖拽上传"| R2["Cloudflare R2<br/>bucket: gallery/*.png|jpg"]
+    OBS["Obsidian<br/>写作 · pubDate 可精确到分<br/>new-article.ps1 建稿"] -->|"git-push.bat"| REPO["文章仓库（私有）<br/>-Summer-Annual-Blog-Article<br/>posts/&lt;slug&gt;/index.md"]
+    INBOX["本地 .gallery-inbox<br/>画廊原图丢这里"] -->|"pnpm gallery:upload<br/>压缩双尺寸 + 上传<br/>原图自动移入 uploaded/"| R2["Cloudflare R2<br/>gallery/ 预览版（宽1200）<br/>gallery-full/ 全图版（宽2560）"]
 
     subgraph actions["GitHub Actions（网站仓库 Summer-Annual-V2）"]
         IMP["1. import-content.mjs<br/>只导入 draft:false 的文章"]
-        BUILD["2. astro build<br/>内容集合 + 双主题 token<br/>S3 列出画廊清单 · sharp 压缩封面"]
+        BUILD["2. astro build<br/>内容集合 + 双主题 token<br/>unified markdown 管线<br/>S3 列画廊清单 · 按上传时间排序<br/>sharp 压缩封面"]
         DEP["3. wrangler pages deploy"]
         IMP --> BUILD --> DEP
     end
@@ -15,19 +15,36 @@ flowchart LR
     TRIG["触发器<br/>网站 push / 文章仓库 push<br/>手动 Run"] --> actions
 
     REPO -->|"Actions 里 checkout"| IMP
-    R2 -.->|"构建时列出图片清单"| BUILD
+    R2 -.->|"构建时列出 gallery/ 清单"| BUILD
 
     DEP --> SITE["Cloudflare Pages<br/>summer-annual.pages.dev"]
-    R2 -->|"pub-xxx.r2.dev 图片直出"| SITE
+    R2 -->|"gallery/ 预览图直出（网格）"| SITE
 
     VIS["访客浏览器"] -->|"页面"| SITE
-    VIS -->|"画廊/封面图片"| R2
+    VIS -->|"网格预览图"| R2
+    VIS -.->|"灯箱点开才加载<br/>gallery-full/ 全图"| R2
 ```
 
 ## 图例说明
 
-- **文章仓库（私有）**：只存文章源文件（md + 图片引用），不含任何站点代码
-- **网站仓库（公开）**：Astro 源码 + 构建流水线；构建产物（含文章内容）只存在 dist/，不进仓库
-- **R2（图床）**：画廊图片直出，读操作公开、写操作仅凭据
-- **触发器**：三条路都会触发完整构建——网站 push、文章仓库 push（notify-site.yml 发 repository_dispatch）、Actions 手动
-- **本地开发**：`pnpm dev` 读取 `.env` 里的 R2 凭据，与线上同一套构建逻辑，`localhost:4321` 全功能预览
+- **文章仓库（私有）**：只存文章源文件（md + 图片引用），不含任何站点代码。
+  Front matter 的 `pubDate` / `updatedDate` 支持精确到分；**不要写时区后缀**，
+  不带时区的值所见即所得。Obsidian 里把属性类型设为 **Date & time** 后
+  "Today" 按钮才带时间栏。
+- **网站仓库（公开）**：Astro 7 + Tailwind CSS 4（CSS-first，token 在
+  `styles/tokens.css`，元素默认样式收在 `@layer base`）+ 构建流水线；
+  构建产物（含文章内容）只存在 dist/，不进仓库。`.node-version` 锁定
+  本地/CI 使用的 Node 版本。
+- **R2（图床，双尺寸）**：`gallery/` 是预览版（网格加载），`gallery-full/`
+  是全图版（灯箱点开才加载）。输出优先 PNG（调色板量化，透明保留），
+  源图为 JPG 或 PNG 压不进 5MB 时用 JPG。读操作公开；写操作仅凭据
+  （本地 `.env` 需要 Object Read & Write 的 Token，CI 只需 Object Read）。
+- **画廊排序**：按 R2 对象的上传时间（LastModified）降序，新的在前；
+  同批内按文件名升序处理，因此批内文件名大者排前。重传旧图即置顶。
+- **`pnpm gallery:upload`**：压缩+上传二合一脚本（`scripts/gallery-upload.mjs`）。
+  不带参数时使用文章仓库旁的 `.gallery-inbox/`（不存在自动创建）；
+  上传成功的原图自动移入其 `uploaded/` 子文件夹；`--dry-run` 只算体积。
+- **触发器**：三条路都会触发完整构建——网站 push、文章仓库 push
+  （notify-site.yml 发 repository_dispatch）、Actions 手动。
+- **本地开发**：`pnpm dev` 读取 `.env` 里的 R2 凭据，与线上同一套构建逻辑，
+  `localhost:4321` 全功能预览。

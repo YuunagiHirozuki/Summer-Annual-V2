@@ -57,10 +57,11 @@ function env(key) {
         resolve(fileURLToPath(new URL('..', import.meta.url)), '.env'),
         'utf8'
     )
-    const line = text
-        .split(/\r?\n/)
-        .find((l) => l.startsWith(key + '='))
-    return line?.slice(key.length + 1).trim().replace(/^["']|["']$/g, '')
+    const line = text.split(/\r?\n/).find((l) => l.startsWith(key + '='))
+    return line
+        ?.slice(key.length + 1)
+        .trim()
+        .replace(/^["']|["']$/g, '')
 }
 
 const accessKeyId = env('R2_ACCESS_KEY_ID')
@@ -69,7 +70,9 @@ const accountId = env('CLOUDFLARE_ACCOUNT_ID')
 const bucket = env('R2_BUCKET')
 
 if (!accessKeyId || !secretAccessKey || !accountId || !bucket) {
-    console.error('缺少 R2 环境变量（.env: R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / CLOUDFLARE_ACCOUNT_ID / R2_BUCKET）')
+    console.error(
+        '缺少 R2 环境变量（.env: R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / CLOUDFLARE_ACCOUNT_ID / R2_BUCKET）'
+    )
     process.exit(1)
 }
 
@@ -83,7 +86,8 @@ for (const input of inputs) {
     if (s.isDirectory()) {
         const dir = await readdir(p)
         // 显式按文件名排序：批内处理顺序 = 上传时间顺序（画廊排序的平局裁决依据）
-        for (const f of dir.sort()) if (IMAGE_EXT.test(f)) files.push(join(p, f))
+        for (const f of dir.sort())
+            if (IMAGE_EXT.test(f)) files.push(join(p, f))
     } else {
         files.push(p)
     }
@@ -119,9 +123,19 @@ async function encodeWithBudget(input, width, height, format) {
             format === 'png'
                 ? await sharp(input)
                       .rotate()
-                      .resize({ width: w, height, fit: 'inside', withoutEnlargement: true })
+                      .resize({
+                          width: w,
+                          height,
+                          fit: 'inside',
+                          withoutEnlargement: true,
+                      })
                       // 调色板量化：透明插画 PNG 的体积主力，视觉损失难以察觉
-                      .png({ compressionLevel: 9, palette: true, quality: q, dither: 1 })
+                      .png({
+                          compressionLevel: 9,
+                          palette: true,
+                          quality: q,
+                          dither: 1,
+                      })
                       .toBuffer()
                 : (await encodeJpg(input, w, height, q)).data
         if (buf.length <= MAX_BYTES || q <= 70) {
@@ -156,7 +170,7 @@ async function processOne(file) {
     let preview = await encodeWithBudget(file, PREVIEW_WIDTH, 1800, format)
     let full = await encodeWithBudget(file, FULL_WIDTH, 3840, format)
 
-    // PNG 用尽质量/宽度阶梯仍压不进 5MB（细节极多的位图）才退回 JPG
+    // PNG 用尽质量/宽度阶梯仍压不进 5MB（细节极多的位图）才退回 JPG//TODO:仍压不进5MB就保持png，不用退回jpg
     if (format === 'png' && full.buf.length > MAX_BYTES) {
         console.log(`  ${name}: PNG 超出 5MB 上限，退回 JPG`)
         format = 'jpg'
@@ -225,7 +239,9 @@ for (const file of files) {
                             '    Object Read & Write 权限的 Token，更新 .env 后重跑。'
                     )
                 } else {
-                    console.error(`  ✗ 上传 ${key} 失败: ${res.status} ${text.slice(0, 200)}`)
+                    console.error(
+                        `  ✗ 上传 ${key} 失败: ${res.status} ${text.slice(0, 200)}`
+                    )
                 }
             }
         }
