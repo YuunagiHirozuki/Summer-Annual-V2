@@ -4,7 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import { SITE_TITLE } from '../consts'
 
 // 画廊布局开关：
-//   false = 变体 2：居中相册网格，行内垂直居中（tumblr 式，现役）
+//   false = 变体 2：居中相册网格，行内垂直居中
 //   true  = 变体 1：满屏相册墙（图 ≥ 20 张后才有好效果；
 //           依赖 tokens.css 的 --breakpoint-3xl 断点，已就位）
 const FULLBLEED_WALL = false
@@ -34,10 +34,10 @@ const artworks = await getGalleryImages()
             artworks.length > 0 ? (
                 <div
                     class:list={[
-                        'gallery-grid grid grid-cols-3 gap-3',
+                        'gallery-grid grid grid-cols-3 items-center',
                         FULLBLEED_WALL
-                            ? 'items-start px-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 3xl:grid-cols-7'
-                            : 'items-center lg:grid-cols-4 lg:gap-4 2xl:grid-cols-5',
+                            ? 'md:grid-cols-4'
+                            : 'gap-x-5 gap-y-10 lg:grid-cols-4 lg:2xl:grid-cols-5',
                     ]}
                 >
                     {artworks.map((art) => (
@@ -70,7 +70,7 @@ const artworks = await getGalleryImages()
 </BaseLayout>
 
 <style is:global>
-    /* 画廊墙：去蓝调的中性展墙，页面色彩退后、让作品自己说话。
+    /* 画廊墙：去蓝调的中性展墙
        仅在本页（含 #gallery-wall 的页面）生效，其他页面不受影响 */
     html[data-theme='dark'] body:has(#gallery-wall) {
         background-color: #1e1f21;
