@@ -73,4 +73,7 @@
     --color-on-hero: var(--on-hero);
 
     --font-body: 'Atkinson', ui-sans-serif, system-ui, sans-serif;
+
+    /* 满屏画廊墙（gallery.astro 变体 1）用的超宽断点 */
+    --breakpoint-3xl: 120rem;
 }
