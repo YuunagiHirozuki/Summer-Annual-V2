@@ -48,7 +48,7 @@ const nextPageHref =
             <a
                 href={prevPageHref}
                 aria-label="上一页"
-                class="flex h-9 w-9 items-center justify-center rounded bg-surface text-aqua transition-colors duration-300 hover:bg-aqua hover:text-aqua-contrast"
+                class="flex h-9 w-9 items-center justify-center rounded text-aqua transition-colors duration-300 hover:bg-aqua hover:text-aqua-contrast"
             >
                 <i class="mi-chevron-left text-inherit"></i>
             </a>
@@ -82,7 +82,7 @@ const nextPageHref =
             ) : (
                 <a
                     href={item.page === 1 ? '/' : `/posts/${item.page}/`}
-                    class="flex h-9 w-9 items-center justify-center rounded bg-surface text-aqua transition-colors duration-300 hover:bg-aqua hover:text-aqua-contrast"
+                    class="flex h-9 w-9 items-center justify-center rounded text-aqua transition-colors duration-300 hover:bg-aqua hover:text-aqua-contrast"
                 >
                     {item.page}
                 </a>
@@ -96,7 +96,7 @@ const nextPageHref =
             <a
                 href={nextPageHref}
                 aria-label="下一页"
-                class="flex h-9 w-9 items-center justify-center rounded bg-surface text-aqua transition-colors duration-300 hover:bg-aqua hover:text-aqua-contrast"
+                class="flex h-9 w-9 items-center justify-center rounded text-aqua transition-colors duration-300 hover:bg-aqua hover:text-aqua-contrast"
             >
                 <i class="mi-chevron-right text-inherit"></i>
             </a>
