@@ -6,21 +6,30 @@ interface Props {
 
 const { currentPage = 1, totalPages = 1 } = Astro.props
 
-// 计算可见页范围
-let startPage = Math.max(1, currentPage - 2)
-let endPage = Math.min(totalPages, currentPage + 2)
+// 页码清单：首尾恒显，当前页 ±2 在窗口内，中间的空洞用省略号占位。
+// 相邻页码只差 1 时直接显示，差 2 时补上中间那一页，差更多才出省略号
+const wanted = [
+    ...new Set(
+        [
+            1,
+            totalPages,
+            currentPage - 2,
+            currentPage - 1,
+            currentPage,
+            currentPage + 1,
+            currentPage + 2,
+        ].filter((p) => p >= 1 && p <= totalPages)
+    ),
+].sort((a, b) => a - b)
 
-// 若范围太小导致页数不足5个，则向两侧补足
-if (endPage - startPage < 4) {
-    if (startPage === 1) {
-        endPage = Math.min(totalPages, startPage + 4)
-    } else if (endPage === totalPages) {
-        startPage = Math.max(1, endPage - 4)
-    }
+const pageItems: Array<{ type: 'page' | 'ellipsis'; page?: number }> = []
+let prev = 0
+for (const p of wanted) {
+    if (p - prev === 2) pageItems.push({ type: 'page', page: p - 1 })
+    else if (p - prev > 2) pageItems.push({ type: 'ellipsis' })
+    pageItems.push({ type: 'page', page: p })
+    prev = p
 }
-
-const visiblePages: number[] = []
-for (let i = startPage; i <= endPage; i++) visiblePages.push(i)
 
 const prevPageHref =
     currentPage === 1
@@ -46,23 +55,32 @@ const nextPageHref =
         )
     }
 
-    <!-- 中间页 -->
+    <!-- 页码：当前页渲染为 span + aria-current（"现在在哪"不是链接） -->
     {
-        visiblePages.map((page) => {
-            const isCurrent = page === currentPage
-            return (
-                <a
-                    href={page === 1 ? '/' : `/posts/${page}/`}
-                    class={`flex h-9 w-9 items-center justify-center rounded transition-colors duration-300 ${
-                        isCurrent
-                            ? 'pointer-events-none cursor-default bg-aqua text-aqua-contrast'
-                            : 'bg-surface text-aqua hover:bg-aqua hover:text-aqua-contrast'
-                    }`}
+        pageItems.map((item) =>
+            item.type === 'ellipsis' ? (
+                <span
+                    aria-hidden="true"
+                    class="flex h-9 w-9 items-center justify-center text-muted"
                 >
-                    {page}
+                    …
+                </span>
+            ) : item.page === currentPage ? (
+                <span
+                    aria-current="page"
+                    class="flex h-9 w-9 items-center justify-center rounded bg-aqua text-aqua-contrast"
+                >
+                    {item.page}
+                </span>
+            ) : (
+                <a
+                    href={item.page === 1 ? '/' : `/posts/${item.page}/`}
+                    class="flex h-9 w-9 items-center justify-center rounded bg-surface text-aqua transition-colors duration-300 hover:bg-aqua hover:text-aqua-contrast"
+                >
+                    {item.page}
                 </a>
             )
-        })
+        )
     }
 
     <!-- 下一页（无下一页时不渲染） -->
