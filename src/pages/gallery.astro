@@ -5,8 +5,8 @@ import { SITE_TITLE } from '../consts'
 
 // 画廊布局开关：
 //   false = 变体 2：居中相册网格，行内垂直居中
-//   true  = 变体 1：满屏相册墙（图 ≥ 20 张后才有好效果；
-//           依赖 tokens.css 的 --breakpoint-3xl 断点，已就位）
+//   true  = 变体 1：满屏相册墙（固定 4 列，图片随窗口放大；
+//           图 ≥ 20 张后才有好效果）
 const FULLBLEED_WALL = false
 
 const artworks = await getGalleryImages()
