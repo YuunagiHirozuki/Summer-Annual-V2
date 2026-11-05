@@ -34,10 +34,10 @@ const artworks = await getGalleryImages()
             artworks.length > 0 ? (
                 <div
                     class:list={[
-                        'gallery-grid grid grid-cols-3 items-center',
+                        'gallery-grid grid grid-cols-3 items-center gap-x-2 gap-y-4',
                         FULLBLEED_WALL
-                            ? 'md:grid-cols-4'
-                            : 'gap-x-5 gap-y-10 lg:grid-cols-4 lg:2xl:grid-cols-5',
+                            ? 'px-2 md:grid-cols-4 lg:gap-3'
+                            : 'lg:gap-x-6 lg:gap-y-12 lg:grid-cols-4 2xl:grid-cols-5',
                     ]}
                 >
                     {artworks.map((art) => (
