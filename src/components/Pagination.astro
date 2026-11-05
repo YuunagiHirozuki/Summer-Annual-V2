@@ -42,9 +42,9 @@ const nextPageHref =
 ---
 
 <div class="mt-8 flex items-center justify-center space-x-2">
-    <!-- 上一页（无上一页时不渲染，不留占位） -->
+    <!-- 上一页（无上一页时以 invisible 占位：保留布局位置，页面结构不因翻页移动） -->
     {
-        prevPageHref && (
+        prevPageHref ? (
             <a
                 href={prevPageHref}
                 aria-label="上一页"
@@ -52,6 +52,13 @@ const nextPageHref =
             >
                 <i class="mi-chevron-left text-inherit"></i>
             </a>
+        ) : (
+            <span
+                aria-hidden="true"
+                class="invisible flex h-9 w-9 items-center justify-center"
+            >
+                <i class="mi-chevron-left"></i>
+            </span>
         )
     }
 
@@ -83,9 +90,9 @@ const nextPageHref =
         )
     }
 
-    <!-- 下一页（无下一页时不渲染） -->
+    <!-- 下一页（无下一页时以 invisible 占位） -->
     {
-        nextPageHref && (
+        nextPageHref ? (
             <a
                 href={nextPageHref}
                 aria-label="下一页"
@@ -93,6 +100,13 @@ const nextPageHref =
             >
                 <i class="mi-chevron-right text-inherit"></i>
             </a>
+        ) : (
+            <span
+                aria-hidden="true"
+                class="invisible flex h-9 w-9 items-center justify-center"
+            >
+                <i class="mi-chevron-right"></i>
+            </span>
         )
     }
 </div>
