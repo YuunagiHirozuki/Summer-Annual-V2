@@ -18,8 +18,10 @@ const years = [
         <h1 class="mb-10 text-center text-4xl font-bold">Archive</h1>
 
         <div class="relative">
+            <!-- 顶端从第一个年份圆点的圆心（27px ≈ 2rem × 1.7 行高 ÷ 2）起线，
+                 不再向上突出；若调整年份标题字号需同步此值 -->
             <div
-                class="absolute inset-y-0 left-0 w-0.5 bg-border"
+                class="absolute left-0 top-[27px] bottom-0 w-0.5 bg-border"
                 aria-hidden="true"
             >
             </div>
@@ -27,11 +29,11 @@ const years = [
             {
                 years.map((year) => (
                     <section class="relative mb-12 pl-8">
-                        <span
-                            class="absolute -left-[7px] top-0 h-4 w-4 rounded-full border-4 border-aqua bg-background"
-                            aria-hidden="true"
-                        />
-                        <h2 class="mb-4 text-[2rem] font-bold text-aqua">
+                        <h2 class="relative mb-4 text-[2rem] font-bold text-aqua">
+                            <span
+                                class="absolute -left-[39px] top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-4 border-aqua bg-background"
+                                aria-hidden="true"
+                            />
                             {year}
                         </h2>
                         <div class="grid gap-2">
