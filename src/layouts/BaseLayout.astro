@@ -131,5 +131,10 @@ const { title, description, hero = 'half', heroImage } = Astro.props
     document.addEventListener('astro:page-load', initLightbox)
     document.addEventListener('astro:before-swap', () => lightbox?.destroy())
 </script>
+
+<script>
+    // mermaid 图缩放：仅文章含 mermaid 时生效，panzoom 按需动态加载
+    import '../scripts/mermaid-zoom'
+</script>
 </body>
 </html>
