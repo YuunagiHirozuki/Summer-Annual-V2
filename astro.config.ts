@@ -7,13 +7,19 @@ import rehypeSlug from 'rehype-slug'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import icon from 'astro-icon'
 import remarkBreaks from 'remark-breaks'
+import mermaid from 'astro-mermaid'
 
 // https://astro.build/config
 export default defineConfig({
     // 以后若绑定自定义域名，只需改这一行
     site: 'https://summer-annual.pages.dev',
     output: 'static',
-    integrations: [mdx(), sitemap(), icon()],
+    integrations: [
+        mdx(),
+        sitemap(),
+        icon(),
+        mermaid({ theme: 'dark', autoTheme: true }),
+    ],
 
     vite: {
         plugins: [tailwindcss()],
