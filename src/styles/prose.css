@@ -288,8 +288,26 @@
     line-height: 1.7;
 }
 
-/* 没有 .code-block 外壳的裸 pre （脚本未运行时的兜底样式） */
-.md-content pre:not(.code-block pre) {
+/* 没有 .code-block 外壳的裸 pre（mermaid 由下方规则单独处理） */
+.md-content pre:not(.code-block pre):not(.mermaid) {
     margin: 1.5em 0;
     border-radius: 4px;
+}
+
+/* ===== mermaid 图：与正文图片一致，横向铺满文章卡片 =====
+   astro-mermaid 会给 pre.mermaid 注入 flex 居中 + padding: 1rem +
+   min-height: 200px 的运行时样式，这里全部覆盖掉，
+   让图铺满出血后的整个宽度 */
+.md-content pre.mermaid {
+    display: block;
+    margin: 1.5em -1.5rem;
+    padding: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+@media (min-width: 640px) {
+    .md-content pre.mermaid {
+        margin: 1.5em -2.75rem;
+    }
 }

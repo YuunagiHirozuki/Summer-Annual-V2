@@ -21,6 +21,9 @@ function initCodeBlocks() {
         .querySelectorAll<HTMLPreElement>('.md-content pre')
         .forEach((pre) => {
             if (pre.dataset.toolbar) return
+            // mermaid 图有自己的展示样式（prose.css 满卡片出血 + 缩放），
+            // 不套代码块外壳
+            if (pre.classList.contains('mermaid')) return
             pre.dataset.toolbar = '1'
 
             const code = pre.querySelector('code')
