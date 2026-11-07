@@ -50,7 +50,8 @@ scripts/
 3. 原图（png/jpg，建议 2000px 以上）放进任意文件夹，跑：
 
    ```bash
-   pnpm gallery:upload <图片文件夹>
+   pnpm gallery:upload <图片文件夹>   # 单次：传完退出
+   pnpm gallery:upload --watch        # 监视：持续待命，随放随传，按任意键退出
    ```
 
    脚本自动处理并上传到 `gallery/`（网格与灯箱共用同一份完整图片）：

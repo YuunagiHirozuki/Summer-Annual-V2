@@ -42,7 +42,8 @@ flowchart LR
   同批内按文件名升序处理，因此批内文件名大者排前。重传旧图即置顶。
 - **`pnpm gallery:upload`**：处理+上传二合一脚本（`scripts/gallery-upload.mjs`）。
   不带参数时使用文章仓库旁的 `.gallery-inbox/`（不存在自动创建）；
-  上传成功的原图自动移入其 `uploaded/` 子文件夹；`--dry-run` 只算体积。
+  上传成功的原图自动移入其 `uploaded/` 子文件夹；`--dry-run` 只算体积；
+  `--watch` 进入监视模式，图片就绪即传、任意键退出。
 - **触发器**：三条路都会触发完整构建——网站 push、文章仓库 push
   （notify-site.yml 发 repository_dispatch）、Actions 手动。
 - **本地开发**：`pnpm dev` 读取 `.env` 里的 R2 凭据，与线上同一套构建逻辑，
