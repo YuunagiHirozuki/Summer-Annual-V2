@@ -91,7 +91,8 @@ const { title, description, hero = 'half', heroImage } = Astro.props
                 anchor.dataset.pswpHeight = String(
                     Number(img.getAttribute('height')) || img.naturalHeight || 0
                 )
-                anchor.dataset.pswpSrc = anchor.href
+                // 注意：不在这里写 data-pswp-src——画廊锚点的全图地址由
+                // 服务端声明，覆盖会把手绘/大图版降级成预览版
             }
 
             let anchor = img.parentElement as HTMLAnchorElement | null
