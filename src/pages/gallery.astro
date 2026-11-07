@@ -43,7 +43,7 @@ const artworks = await getGalleryImages()
                     {artworks.map((art) => (
                         <a
                             href={art.src}
-                            data-pswp-src={art.full}
+                            draggable="false"
                             class="block"
                         >
                             <img
@@ -51,7 +51,6 @@ const artworks = await getGalleryImages()
                                 alt={art.alt}
                                 loading="lazy"
                                 decoding="async"
-                                draggable="false"
                                 class="w-full"
                             />
                         </a>
