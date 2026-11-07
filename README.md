@@ -63,7 +63,7 @@ scripts/
 inbox 里永远只剩没传过的图，重复跑同一文件夹也只会传新增的。
 
 画廊页在构建时通过 S3 接口列出 bucket 的 `gallery/` 对象，
-网格加载预览版，灯箱点开才加载 `gallery-full/` 全图版。
+网格与灯箱共用同一份完整图片。
 
 ## 部署（.github/workflows/deploy.yml）
 
