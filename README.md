@@ -41,7 +41,7 @@ scripts/
 `draft: true` 不会发布。仓库根目录的 `_template.md` 是 front matter 模板。
 完整格式见文章仓库的 README。
 
-## 画廊（图片存 Cloudflare R2，双尺寸）
+## 画廊（图片存 Cloudflare R2）
 
 1. Cloudflare 建一个 R2 bucket，在 bucket 设置里开启公开访问（r2.dev 域名）
 2. R2 → Manage R2 API Tokens → 创建一个 **Object Read & Write** 权限的
@@ -53,10 +53,9 @@ scripts/
    pnpm gallery:upload <图片文件夹>
    ```
 
-   脚本自动生成两版并上传：`gallery/` 预览版（宽 1200，网格加载用）、
-   `gallery-full/` 全图版（灯箱放大用）。全图版 ≤10MB 原样直传
-   （零损失，不缩放不转格式），>10MB 才最小损失压缩到 10MB 内；
-   预览版固定宽 1200、质量阶梯 + 5MB 保险丝
+   脚本自动处理并上传到 `gallery/`（网格与灯箱共用同一份完整图片）：
+   ≤10MB 原样直传（零损失，不缩放不转格式），>10MB 才最小损失压缩到
+   10MB 内（保持原始尺寸，先降质量）
 4. 触发一次构建：网站仓库 Actions 手动 Run
 
 上传成功的原图会自动移入该文件夹的 `uploaded/` 子文件夹——
