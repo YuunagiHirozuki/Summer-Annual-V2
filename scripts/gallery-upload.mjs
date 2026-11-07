@@ -277,6 +277,15 @@ async function upload(r2, body, key, contentType) {
 
 const r2 = new AwsClient({ accessKeyId, secretAccessKey })
 let failed = 0
+// 监视模式下失败会每轮重试：同一文件的同一类错误只报一次，避免刷屏
+const reportedFailures = new Set()
+
+function reportFailure(file, message) {
+    const key = `${file}::${message.split('\n')[0].slice(0, 80)}`
+    if (reportedFailures.has(key)) return
+    reportedFailures.add(key)
+    console.error(message)
+}
 
 /** 处理并上传一张图，成功后归档原图并更新顺序清单 */
 async function uploadOne(file) {
@@ -302,15 +311,14 @@ async function uploadOne(file) {
         failed++
         const text = await res.text().catch(() => '')
         if (res.status === 403) {
-            console.error(
+            reportFailure(
+                key,
                 `  ✗ 上传 ${key} 被拒绝(403)：当前 R2 Token 是只读的。\n` +
                     '    请到 Cloudflare → R2 → Manage R2 API Tokens 创建一个\n' +
                     '    Object Read & Write 权限的 Token，更新 .env 后重跑。'
             )
         } else {
-            console.error(
-                `  ✗ 上传 ${key} 失败: ${res.status} ${text.slice(0, 200)}`
-            )
+            reportFailure(key, `  ✗ 上传 ${key} 失败: ${res.status} ${text.slice(0, 200)}`)
         }
     }
 
