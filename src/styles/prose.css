@@ -79,14 +79,14 @@
 
 /* ===== 正文图片：横向铺满文章卡片 ===== */
 
-.md-content p:has(> a > img) {
+.md-content p:has(img) {
     margin-top: 1.5em;
     margin-bottom: 1.5em;
     margin-left: -1.5rem;
     margin-right: -1.5rem;
 }
 
-.md-content p:has(> a > img) img {
+.md-content p:has(img) img {
     display: block;
     width: 100%;
     max-width: none;
@@ -96,13 +96,13 @@
 }
 
 /* 图片与文字处于同一段落时，文字作为图片说明 */
-.md-content p:has(> a > img) {
+.md-content p:has(img) {
     text-align: center;
     color: var(--muted);
 }
 
 @media (min-width: 640px) {
-    .md-content p:has(> a > img) {
+    .md-content p:has(img) {
         margin-left: -2.75rem;
         margin-right: -2.75rem;
     }
