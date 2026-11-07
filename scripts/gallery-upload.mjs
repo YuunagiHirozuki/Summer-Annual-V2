@@ -1,30 +1,31 @@
 #!/usr/bin/env node
-// 画廊上传脚本：压缩（双尺寸）→ 上传 R2
+// 画廊上传脚本：预览版压缩 + 全图版按需处理 → 上传 R2
 //
 // 用法：
 //   pnpm gallery:upload                 ← 使用默认收件箱（文章仓库旁 .gallery-inbox/，不存在则自动创建）
 //   node scripts/gallery-upload.mjs <图片文件或目录...> [--dry-run]
 //   pnpm gallery:upload ./我的画 --dry-run
 //
-// 产物（均为 jpg；源图带透明通道时保留 png）：
-//   gallery/<名称>.jpg      预览版：宽 1200px，网格用
-//   gallery-full/<名称>.jpg 全图版：宽 2560px，灯箱放大用
+// 产物：
+//   gallery/<名称>.<png|jpg>        预览版：宽 1200px，网格加载用（质量阶梯 + 5MB 保险丝）
+//   gallery-full/<名称>.<原扩展名>  全图版：≤10MB 原样直传（零损失）；
+//                                   >10MB 才最小损失压缩到 10MB 内
+//                                   （保持原始尺寸，先降质量，宽高缩放做最后手段）
 //
-// 约束：单张 100KB–5MB（用户约定）。超限时自动降质量/降宽度，
-// 降到下限仍超标则原样上传并给出警告。
+// 上传成功的原图自动移入 uploaded/ 子文件夹。
 // 上传需要 R2 Token 具有 Object Read & Write 权限（.env 里的
 // R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY），403 时会给出提示。
 
-import { readFile, readdir, stat } from 'node:fs/promises'
+import { readdir, stat } from 'node:fs/promises'
 import { basename, extname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { AwsClient } from 'aws4fetch'
 import sharp from 'sharp'
 
 const PREVIEW_WIDTH = 1200
-const FULL_WIDTH = 2560
-const MAX_BYTES = 5 * 1024 * 1024
-const MB = 1024 * 1024
+const PREVIEW_HEIGHT = 1800
+const PREVIEW_BUDGET = 5 * 1024 * 1024 // 预览版保险丝（正常远达不到）
+const FULL_BUDGET = 10 * 1024 * 1024 // 全图版：≤10MB 原样直传，超过才压缩
 const KB = 1024
 
 const dryRun = process.argv.includes('--dry-run')
@@ -103,9 +104,8 @@ if (files.length === 0) {
 
 // ---- 压缩 ----
 
-/** 迭代输出直到 ≤ 上限：先降质量，再降宽度 */
+/** JPG 编码：flatten 落底色（源图可能带"空的" alpha 通道） */
 async function encodeJpg(input, width, height, quality) {
-    // flatten：源图可能带着"空的" alpha 通道，JPG 需要先落到实底色
     return sharp(input)
         .rotate() // 按 EXIF 摆正
         .flatten({ background: '#ffffff' })
@@ -114,8 +114,8 @@ async function encodeJpg(input, width, height, quality) {
         .toBuffer({ resolveWithObject: true })
 }
 
-/** 迭代输出直到 ≤ 上限：先降质量，再降宽度 */
-async function encodeWithBudget(input, width, height, format) {
+/** 迭代输出直到 ≤ 预算：先降质量，宽高缩放做最后手段 */
+async function encodeWithBudget(input, width, height, format, budget) {
     let q = 95
     let w = width
     for (;;) {
@@ -138,7 +138,7 @@ async function encodeWithBudget(input, width, height, format) {
                       })
                       .toBuffer()
                 : (await encodeJpg(input, w, height, q)).data
-        if (buf.length <= MAX_BYTES || q <= 70) {
+        if (buf.length <= budget || q <= 70) {
             return { buf, width: w, quality: q }
         }
         if (q > 78) {
@@ -160,28 +160,68 @@ async function detectRealAlpha(file) {
 }
 
 async function processOne(file) {
-    const { hasAlpha } = await detectRealAlpha(file)
+    const { hasAlpha, meta } = await detectRealAlpha(file)
     const srcExt = extname(file).toLowerCase()
-    // 输出优先 PNG（透明保留 + 调色板量化）；源图本身是 JPG 时沿用 JPG
-    const format = hasAlpha || srcExt === '.png' ? 'png' : 'jpg'
     const name = basename(file, extname(file))
+    const srcSize = (await stat(file)).size
 
-    // 同时约束宽和高，竖版画不再被单边限制放大像素量
-    const preview = await encodeWithBudget(file, PREVIEW_WIDTH, 1800, format)
-    const full = await encodeWithBudget(file, FULL_WIDTH, 3840, format)
+    // 预览版：宽 1200（网格加载用），质量阶梯 + 5MB 保险丝维持现状
+    const previewFormat = hasAlpha || srcExt === '.png' ? 'png' : 'jpg'
+    const preview = await encodeWithBudget(
+        file,
+        PREVIEW_WIDTH,
+        PREVIEW_HEIGHT,
+        previewFormat,
+        PREVIEW_BUDGET
+    )
+
+    // 全图版：≤10MB 原样直传（零损失，不缩放不转格式不重编码）；
+    // >10MB 才最小损失压缩到 10MB 内（保持原始尺寸，先降质量，
+    // 宽高缩放做最后手段）。直传仅限 png/jpg——其他格式的预览版
+    // 扩展名与之不同，直传会导致站点的全图 URL 404
+    const passthrough =
+        srcSize <= FULL_BUDGET &&
+        (srcExt === '.png' || srcExt === '.jpg' || srcExt === '.jpeg')
+    let fullBuf
+    let fullExt
+    if (passthrough) {
+        fullBuf = readFileSync(file)
+        fullExt = srcExt === '.jpeg' ? 'jpg' : srcExt.slice(1)
+    } else {
+        const fullFormat = srcExt === '.png' ? 'png' : 'jpg'
+        const encoded = await encodeWithBudget(
+            file,
+            meta.width,
+            meta.height,
+            fullFormat,
+            FULL_BUDGET
+        )
+        fullBuf = encoded.buf
+        fullExt = fullFormat
+    }
 
     return {
         name,
-        ext: format,
+        ext: previewFormat,
+        fullExt,
+        passthrough,
         preview: preview.buf,
-        full: full.buf,
+        full: fullBuf,
         previewKB: Math.round(preview.buf.length / KB),
-        fullKB: Math.round(full.buf.length / KB),
-        fullOverBudget: full.buf.length > MAX_BYTES,
+        fullKB: Math.round(fullBuf.length / KB),
     }
 }
 
 // ---- 上传 ----
+
+const CONTENT_TYPES = {
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    webp: 'image/webp',
+    gif: 'image/gif',
+    avif: 'image/avif',
+}
 
 async function upload(r2, body, key, contentType) {
     const url = new URL(
@@ -201,7 +241,6 @@ async function upload(r2, body, key, contentType) {
 // ---- 主流程 ----
 
 const r2 = new AwsClient({ accessKeyId, secretAccessKey })
-const contentTypeFor = (ext) => (ext === 'png' ? 'image/png' : 'image/jpeg')
 let failed = 0
 
 for (const file of files) {
@@ -210,16 +249,21 @@ for (const file of files) {
         const base = out.name
         console.log(
             `${base}: 预览 ${out.previewKB}KB / 全图 ${out.fullKB}KB` +
-                (out.fullOverBudget ? '  ⚠️ 全图超过 5MB，已尽力压缩' : '')
+                (out.passthrough ? '（原样直传）' : '（已压缩至 10MB 内）')
         )
         if (dryRun) continue
 
         let ok = true
         for (const [key, body, ext] of [
             [`gallery/${base}.${out.ext}`, out.preview, out.ext],
-            [`gallery-full/${base}.${out.ext}`, out.full, out.ext],
+            [`gallery-full/${base}.${out.fullExt}`, out.full, out.fullExt],
         ]) {
-            const res = await upload(r2, body, key, contentTypeFor(ext))
+            const res = await upload(
+                r2,
+                body,
+                key,
+                CONTENT_TYPES[ext] ?? 'application/octet-stream'
+            )
             if (!res.ok) {
                 ok = false
                 failed++
