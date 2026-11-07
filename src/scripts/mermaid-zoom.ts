@@ -1,24 +1,22 @@
-// mermaid 图的缩放与拖拽。
-// astro-mermaid 在客户端渲染（<pre class="mermaid"> → svg），且主题切换、
-// ClientRouter 换页时会整体重渲染——这里用 MutationObserver 跟随重建。
-// 只在图确实放不下容器时才启用缩放，小图保持安静。
+// mermaid 图的全屏预览（lightbox 式，PhotoSwipe 交互）：
+// 大图在正文里被缩到容器宽度看不清——点击图打开全屏覆盖层，
+// 图按屏幕适配居中，滚轮/拖拽/双指缩放平移，ESC / ✕ / 点空白关闭。
+// astro-mermaid 重渲染、主题切换、ClientRouter 换页由 MutationObserver 跟随。
 
-type PanzoomInstance = {
-    dispose: () => void
-    smoothZoom: (x: number, y: number, factor: number) => void
-    zoomAbs: (x: number, y: number, scale: number) => void
-    moveTo: (x: number, y: number) => void
-}
-
-/** 处理记录：pre 元素 → 已处理的 svg（或 'plain' = 无需缩放）。svg 被重渲染替换后会重新处理 */
 const processed = new WeakMap<HTMLElement, SVGSVGElement | 'plain'>()
-const instances = new WeakMap<HTMLElement, PanzoomInstance>()
+let overlay: HTMLElement | null = null
+let escListener: ((event: KeyboardEvent) => void) | null = null
 
-/** mermaid 把自然宽度写进 svg 的 max-width 样式（如 max-width: 1428px） */
-function naturalWidth(svg: SVGSVGElement): number {
+/** mermaid 把自然宽度写进 svg 的 max-width 样式（如 max-width: 1766px） */
+function naturalSize(svg: SVGSVGElement) {
     const fromStyle = parseFloat(svg.style.maxWidth)
-    if (!Number.isNaN(fromStyle) && fromStyle > 0) return fromStyle
-    return svg.viewBox.baseVal.width || svg.getBoundingClientRect().width
+    const width =
+        !Number.isNaN(fromStyle) && fromStyle > 0
+            ? fromStyle
+            : svg.viewBox.baseVal.width || 640
+    const vb = svg.viewBox.baseVal
+    const height = vb.width > 0 ? (width / vb.width) * vb.height : width * 0.75
+    return { width, height }
 }
 
 function setup(pre: HTMLElement) {
@@ -26,64 +24,77 @@ function setup(pre: HTMLElement) {
     if (!svg || processed.get(pre) === svg) return
     processed.set(pre, svg)
 
-    pre.classList.add('mermaid-zoom-host')
-
-    // 小图：撑满容器就看得清，不启用缩放
-    if (naturalWidth(svg) <= pre.clientWidth + 2) {
+    // 小图：撑满容器就看得清，不启用全屏预览
+    if (naturalSize(svg).width <= pre.clientWidth + 2) {
         processed.set(pre, 'plain')
         return
     }
 
-    void import('panzoom').then(({ default: panzoom }) => {
-        // 等待加载期间图可能被重渲染过
-        if (processed.get(pre) !== svg) return
-        instances.get(pre)?.dispose()
+    pre.classList.add('mermaid-zoomable')
+    pre.addEventListener('click', () => openLightbox(pre))
+}
 
-        const instance = panzoom(svg, {
-            maxZoom: 4,
-            minZoom: 1,
-            zoomDoubleClickSpeed: 1,
-            // 普通滚轮保持页面滚动；按住 Ctrl/Cmd 才是缩放
-            beforeWheel: (event) => {
-                const wheel = event as WheelEvent
-                return !(wheel.ctrlKey || wheel.metaKey)
-            },
-        })
-        instances.set(pre, instance)
+function openLightbox(pre: HTMLElement) {
+    if (overlay) return
+    const source = pre.querySelector<SVGSVGElement>('svg')
+    if (!source) return
 
-        const markZoomed = () => {
-            pre.classList.toggle('mermaid-zoomed', instance.getTransform().scale > 1.01)
-        }
-        // zoom：按钮/Ctrl+滚轮缩放；pan：拖拽平移。两处都要同步状态
-        instance.on('zoom', markZoomed)
-        instance.on('pan', () => {
-            // 未放大时禁止平移（拖拽自动回弹到撑满状态）
-            const t = instance.getTransform()
-            if (t.scale <= 1.001 && (t.x !== 0 || t.y !== 0)) {
-                instance.moveTo(0, 0)
-            }
-            markZoomed()
-        })
+    // 克隆进覆盖层（不移动节点，避免和 astro-mermaid 的重渲染打架）
+    const { width, height } = naturalSize(source)
+    const fit = Math.min((innerWidth - 32) / width, (innerHeight - 32) / height, 1)
+    const clone = source.cloneNode(true) as SVGSVGElement
+    clone.removeAttribute('style')
+    clone.style.width = `${Math.round(width * fit)}px`
+    clone.style.height = `${Math.round(height * fit)}px`
 
-        // 工具条：放大 / 缩小 / 重置
-        const bar = document.createElement('div')
-        bar.className = 'mermaid-zoom-bar'
-        const button = (label: string, title: string, action: () => void) => {
-            const b = document.createElement('button')
-            b.type = 'button'
-            b.textContent = label
-            b.title = title
-            b.addEventListener('click', action)
-            bar.appendChild(b)
-        }
-        button('＋', '放大', () => instance.smoothZoom(pre.clientWidth / 2, 20, 1.3))
-        button('－', '缩小', () => instance.smoothZoom(pre.clientWidth / 2, 20, 1 / 1.3))
-        button('↺', '重置', () => {
-            instance.moveTo(0, 0)
-            instance.zoomAbs(0, 0, 1)
-        })
-        pre.appendChild(bar)
+    overlay = document.createElement('div')
+    overlay.className = 'mermaid-lightbox'
+    const holder = document.createElement('div')
+    holder.className = 'mermaid-lightbox-holder'
+    holder.appendChild(clone)
+    overlay.appendChild(holder)
+
+    const closeBtn = document.createElement('button')
+    closeBtn.type = 'button'
+    closeBtn.className = 'mermaid-lightbox-close'
+    closeBtn.textContent = '✕'
+    closeBtn.setAttribute('aria-label', '关闭预览')
+    overlay.appendChild(closeBtn)
+
+    document.body.appendChild(overlay)
+    document.body.style.overflow = 'hidden' // 锁背景滚动
+
+    const close = () => closeLightbox()
+    closeBtn.addEventListener('click', close)
+    overlay.addEventListener('click', (event) => {
+        // 点图本身不关闭，点空白处关闭
+        const target = event.target as Node | null
+        if (target !== clone && !(target && clone.contains(target))) close()
     })
+    escListener = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') close()
+    }
+    document.addEventListener('keydown', escListener)
+
+    void import('panzoom').then(({ default: panzoom }) => {
+        if (!overlay) return // 覆盖层已被关闭
+        panzoom(clone, {
+            maxZoom: 12,
+            minZoom: 1, // 1 = 适配屏幕的初始状态
+            zoomDoubleClickSpeed: 1,
+        })
+    })
+}
+
+function closeLightbox() {
+    if (!overlay) return
+    overlay.remove()
+    overlay = null
+    document.body.style.overflow = ''
+    if (escListener) {
+        document.removeEventListener('keydown', escListener)
+        escListener = null
+    }
 }
 
 let scheduled = false
@@ -95,22 +106,26 @@ function scan() {
 }
 
 const STYLE = `
-pre.mermaid.mermaid-zoom-host { position: relative; overflow: hidden; }
-pre.mermaid.mermaid-zoomed svg { cursor: grab; }
-pre.mermaid.mermaid-zoomed:active svg { cursor: grabbing; }
-.mermaid-zoom-bar {
-    position: absolute; top: 8px; right: 8px;
-    display: flex; gap: 4px; z-index: 5;
-}
-.mermaid-zoom-bar button {
-    width: 28px; height: 28px;
+pre.mermaid.mermaid-zoomable { cursor: zoom-in; }
+.mermaid-lightbox {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0, 0, 0, 0.92);
     display: flex; align-items: center; justify-content: center;
-    font-size: 14px; line-height: 1;
-    color: var(--ink); background: var(--surface);
-    border: 1px solid var(--border); border-radius: 4px;
+}
+.mermaid-lightbox-holder {
+    width: 100%; height: 100%; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+}
+.mermaid-lightbox svg { display: block; }
+.mermaid-lightbox-close {
+    position: absolute; top: 16px; right: 16px; z-index: 10;
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: #fff; background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 999px;
     cursor: pointer;
 }
-.mermaid-zoom-bar button:hover { color: var(--aqua); border-color: var(--aqua); }
+.mermaid-lightbox-close:hover { background: rgba(255, 255, 255, 0.18); }
 `
 
 function injectStyle() {
@@ -134,4 +149,5 @@ function start() {
 }
 
 document.addEventListener('astro:page-load', start) // ClientRouter 换页后重新扫描
+document.addEventListener('astro:before-swap', closeLightbox) // 换页时若开着预览则关闭
 start()
