@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// 画廊上传脚本：预览版压缩 + 全图版按需处理 → 上传 R2
+// 画廊上传脚本：单尺寸（完整图片）→ 上传 R2
 //
 // 用法：
 //   pnpm gallery:upload                 ← 使用默认收件箱（文章仓库旁 .gallery-inbox/，不存在则自动创建）
@@ -7,24 +7,22 @@
 //   pnpm gallery:upload ./我的画 --dry-run
 //
 // 产物：
-//   gallery/<名称>.<png|jpg>        预览版：宽 1200px，网格加载用（质量阶梯 + 5MB 保险丝）
-//   gallery-full/<名称>.<原扩展名>  全图版：≤10MB 原样直传（零损失）；
-//                                   >10MB 才最小损失压缩到 10MB 内
-//                                   （保持原始尺寸，先降质量，宽高缩放做最后手段）
+//   gallery/<名称>.<原扩展名>  完整图片：网格与灯箱共用同一份。
+//   ≤10MB 原样直传（零损失，不缩放不转格式不重编码）；
+//   >10MB 才最小损失压缩到 10MB 内（保持原始尺寸，先降质量，
+//   宽高缩放做最后手段）。
 //
 // 上传成功的原图自动移入 uploaded/ 子文件夹。
 // 上传需要 R2 Token 具有 Object Read & Write 权限（.env 里的
 // R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY），403 时会给出提示。
 
 import { readdir, stat } from 'node:fs/promises'
-import { basename, extname, join, resolve } from 'node:path'
+import { basename, dirname, extname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { readFileSync, mkdirSync, renameSync } from 'node:fs'
 import { AwsClient } from 'aws4fetch'
 import sharp from 'sharp'
 
-const PREVIEW_WIDTH = 1200
-const PREVIEW_HEIGHT = 1800
-const PREVIEW_BUDGET = 5 * 1024 * 1024 // 预览版保险丝（正常远达不到）
 const FULL_BUDGET = 10 * 1024 * 1024 // 全图版：≤10MB 原样直传，超过才压缩
 const KB = 1024
 
@@ -51,8 +49,6 @@ if (inputs.length === 0) {
 
 // ---- .env（与 utils/gallery.ts 同一套变量）----
 
-import { readFileSync, mkdirSync, renameSync } from 'node:fs'
-import { dirname } from 'node:path'
 function env(key) {
     const text = readFileSync(
         resolve(fileURLToPath(new URL('..', import.meta.url)), '.env'),
@@ -102,7 +98,7 @@ if (files.length === 0) {
     process.exit(1)
 }
 
-// ---- 压缩 ----
+// ---- 处理 ----
 
 /** JPG 编码：flatten 落底色（源图可能带"空的" alpha 通道） */
 async function encodeJpg(input, width, height, quality) {
@@ -129,10 +125,9 @@ async function encodeWithBudget(input, width, height, format, budget) {
                           fit: 'inside',
                           withoutEnlargement: true,
                       })
-                      // 调色板量化：透明插画 PNG 的体积主力，视觉损失难以察觉
                       .png({
                           compressionLevel: 9,
-                          palette: true,
+                          palette: q <= 90 ? true : false,
                           quality: q,
                           dither: 1,
                       })
@@ -149,67 +144,39 @@ async function encodeWithBudget(input, width, height, format, budget) {
     }
 }
 
-/** hasAlpha 只表示"存在 alpha 通道"，导出工具经常带一个全不透明的空通道。
-    只有真的存在透明像素（alpha 最小值 < 255）才值得用 PNG */
-async function detectRealAlpha(file) {
-    const meta = await sharp(file).metadata()
-    if (!meta.hasAlpha) return { hasAlpha: false, meta }
-    const stats = await sharp(file).stats()
-    const alphaMin = stats.channels[3]?.min ?? 255
-    return { hasAlpha: alphaMin < 255, meta }
-}
-
 async function processOne(file) {
-    const { hasAlpha, meta } = await detectRealAlpha(file)
     const srcExt = extname(file).toLowerCase()
     const name = basename(file, extname(file))
     const srcSize = (await stat(file)).size
 
-    // 预览版：宽 1200（网格加载用），质量阶梯 + 5MB 保险丝维持现状
-    const previewFormat = hasAlpha || srcExt === '.png' ? 'png' : 'jpg'
-    const preview = await encodeWithBudget(
-        file,
-        PREVIEW_WIDTH,
-        PREVIEW_HEIGHT,
-        previewFormat,
-        PREVIEW_BUDGET
-    )
-
-    // 全图版：≤10MB 原样直传（零损失，不缩放不转格式不重编码）；
-    // >10MB 才最小损失压缩到 10MB 内（保持原始尺寸，先降质量，
-    // 宽高缩放做最后手段）。直传仅限 png/jpg——其他格式的预览版
-    // 扩展名与之不同，直传会导致站点的全图 URL 404
-    const passthrough =
-        srcSize <= FULL_BUDGET &&
-        (srcExt === '.png' || srcExt === '.jpg' || srcExt === '.jpeg')
-    let fullBuf
-    let fullExt
-    if (passthrough) {
-        fullBuf = readFileSync(file)
-        fullExt = srcExt === '.jpeg' ? 'jpg' : srcExt.slice(1)
-    } else {
-        const fullFormat = srcExt === '.png' ? 'png' : 'jpg'
+    // ≤10MB：原样直传（原始字节，零损失——不缩放、不转格式、不重编码）；
+    // >10MB：最小损失压缩到 10MB 内（保持原始尺寸，先降质量，
+    // 宽高缩放做最后手段）。仅 png/jpg 源走压缩路径——其他格式的
+    // 预览/全图扩展名会不一致，导致站点全图 URL 404
+    let buf
+    let ext
+    if (srcSize <= FULL_BUDGET) {
+        buf = readFileSync(file)
+        ext = srcExt === '.jpeg' ? 'jpg' : srcExt.slice(1)
+    } else if (srcExt === '.png' || srcExt === '.jpg' || srcExt === '.jpeg') {
+        const meta = await sharp(file).metadata()
+        ext = srcExt === '.png' ? 'png' : 'jpg'
         const encoded = await encodeWithBudget(
             file,
             meta.width,
             meta.height,
-            fullFormat,
+            ext,
             FULL_BUDGET
         )
-        fullBuf = encoded.buf
-        fullExt = fullFormat
+        buf = encoded.buf
+    } else {
+        console.error(
+            `  ✗ ${name}${srcExt} 超过 10MB 且不是 png/jpg，无法自动压缩，跳过`
+        )
+        return null
     }
 
-    return {
-        name,
-        ext: previewFormat,
-        fullExt,
-        passthrough,
-        preview: preview.buf,
-        full: fullBuf,
-        previewKB: Math.round(preview.buf.length / KB),
-        fullKB: Math.round(fullBuf.length / KB),
-    }
+    return { name, ext, buf, kb: Math.round(buf.length / KB) }
 }
 
 // ---- 上传 ----
@@ -246,39 +213,33 @@ let failed = 0
 for (const file of files) {
     try {
         const out = await processOne(file)
+        if (!out) continue
         const base = out.name
-        console.log(
-            `${base}: 预览 ${out.previewKB}KB / 全图 ${out.fullKB}KB` +
-                (out.passthrough ? '（原样直传）' : '（已压缩至 10MB 内）')
-        )
+        console.log(`${base}.${out.ext}: ${out.kb}KB`)
         if (dryRun) continue
 
         let ok = true
-        for (const [key, body, ext] of [
-            [`gallery/${base}.${out.ext}`, out.preview, out.ext],
-            [`gallery-full/${base}.${out.fullExt}`, out.full, out.fullExt],
-        ]) {
-            const res = await upload(
-                r2,
-                body,
-                key,
-                CONTENT_TYPES[ext] ?? 'application/octet-stream'
-            )
-            if (!res.ok) {
-                ok = false
-                failed++
-                const text = await res.text().catch(() => '')
-                if (res.status === 403) {
-                    console.error(
-                        `  ✗ 上传 ${key} 被拒绝(403)：当前 R2 Token 是只读的。\n` +
-                            '    请到 Cloudflare → R2 → Manage R2 API Tokens 创建一个\n' +
-                            '    Object Read & Write 权限的 Token，更新 .env 后重跑。'
-                    )
-                } else {
-                    console.error(
-                        `  ✗ 上传 ${key} 失败: ${res.status} ${text.slice(0, 200)}`
-                    )
-                }
+        const key = `gallery/${base}.${out.ext}`
+        const res = await upload(
+            r2,
+            out.buf,
+            key,
+            CONTENT_TYPES[out.ext] ?? 'application/octet-stream'
+        )
+        if (!res.ok) {
+            ok = false
+            failed++
+            const text = await res.text().catch(() => '')
+            if (res.status === 403) {
+                console.error(
+                    `  ✗ 上传 ${key} 被拒绝(403)：当前 R2 Token 是只读的。\n` +
+                        '    请到 Cloudflare → R2 → Manage R2 API Tokens 创建一个\n' +
+                        '    Object Read & Write 权限的 Token，更新 .env 后重跑。'
+                )
+            } else {
+                console.error(
+                    `  ✗ 上传 ${key} 失败: ${res.status} ${text.slice(0, 200)}`
+                )
             }
         }
 
