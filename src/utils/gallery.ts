@@ -4,15 +4,34 @@
 // 页面显示空态，不阻塞构建。
 
 import { AwsClient } from 'aws4fetch'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 
 export interface GalleryImage {
-    /** 预览版（宽 1200px，网格加载用） */
+    /** 完整图片（网格与灯箱共用同一份） */
     src: string
-    /** 全图版（宽 2560px，灯箱点开时才加载） */
-    full: string
     alt: string
-    /** 上传时间戳：排序用，新的在前 */
+    /** 上传时间戳：清单之外的图按它排在清单后面 */
     uploadedAt: number
+    /** R2 对象的文件名（顺序清单按它匹配） */
+    filename: string
+}
+
+/** 顺序清单：src/config/gallery-order.txt 每行一个文件名，
+    从上到下 = 画廊展示顺序。由 gallery-upload.mjs 自动维护（新图置顶），
+    手动编辑挪行即可自由调序。清单缺失时回退到上传时间排序 */
+function readOrderList(): string[] {
+    try {
+        return readFileSync(
+            join(process.cwd(), 'src/config/gallery-order.txt'),
+            'utf8'
+        )
+            .split(/\r?\n/)
+            .map((l) => l.trim())
+            .filter((l) => l.length > 0 && !l.startsWith('#'))
+    } catch {
+        return []
+    }
 }
 
 const IMAGE_EXTENSIONS = /\.(png|jpe?g|webp|gif|avif)$/i
@@ -84,15 +103,14 @@ export async function getGalleryImages(): Promise<GalleryImage[]> {
                 const key = decodeXmlEntities(keyMatch[1])
                 if (!IMAGE_EXTENSIONS.test(key)) continue
                 const filename = key.split('/').pop() ?? key
-                const fullKey = key.replace('gallery/', 'gallery-full/')
                 const lastModified = entry.match(/<LastModified>([^<]+)<\/LastModified>/)
                 images.push({
                     src: `${publicBase}/${key}`,
-                    full: `${publicBase}/${fullKey}`,
                     alt: decodeXmlEntities(filename.replace(IMAGE_EXTENSIONS, '')),
                     uploadedAt: lastModified
                         ? Date.parse(decodeXmlEntities(lastModified[1]))
                         : 0,
+                    filename: filename,
                 })
             }
 
@@ -105,8 +123,17 @@ export async function getGalleryImages(): Promise<GalleryImage[]> {
         return []
     }
 
-    // 新的在前（上传时间降序）；同一时刻按 key 的数字感知降序稳定裁决
+    // 排序：顺序清单在前（按清单行序，新的在左上）；
+    // 清单之外的图按上传时间降序跟在后面；同刻按 key 数字感知降序裁决
+    const orderIndex = new Map(
+        readOrderList().map((n, i) => [n.toLowerCase(), i] as const)
+    )
     return images.sort((a, b) => {
+        const oa = orderIndex.get(a.filename.toLowerCase())
+        const ob = orderIndex.get(b.filename.toLowerCase())
+        if (oa !== undefined && ob !== undefined) return oa - ob
+        if (oa !== undefined) return -1
+        if (ob !== undefined) return 1
         if (a.uploadedAt !== b.uploadedAt) return b.uploadedAt - a.uploadedAt
         return b.src.localeCompare(a.src, undefined, { numeric: true })
     })

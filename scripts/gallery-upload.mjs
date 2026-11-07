@@ -19,7 +19,7 @@
 import { readdir, stat } from 'node:fs/promises'
 import { basename, dirname, extname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { readFileSync, mkdirSync, renameSync } from 'node:fs'
+import { readFileSync, mkdirSync, renameSync, writeFileSync } from 'node:fs'
 import { AwsClient } from 'aws4fetch'
 import sharp from 'sharp'
 
@@ -205,6 +205,31 @@ async function upload(r2, body, key, contentType) {
     return res
 }
 
+// ---- 顺序清单（src/config/gallery-order.txt）----
+// 每行一个文件名，从上到下 = 画廊展示顺序。上传脚本自动把新图置顶；
+// 手动调整顺序 = 直接编辑这个文件挪行，随下一次 push 生效
+
+function updateOrderList(names) {
+    const listPath = resolve(
+        fileURLToPath(new URL('..', import.meta.url)),
+        'src/config/gallery-order.txt'
+    )
+    let lines = []
+    try {
+        lines = readFileSync(listPath, 'utf8')
+            .split(/\r?\n/)
+            .map((l) => l.trim())
+            .filter((l) => l && !l.startsWith('#'))
+    } catch {
+        // 清单不存在则从空开始
+    }
+    for (const n of names) {
+        if (!lines.includes(n)) lines.unshift(n)
+    }
+    mkdirSync(dirname(listPath), { recursive: true })
+    writeFileSync(listPath, lines.join('\n') + '\n')
+}
+
 // ---- 主流程 ----
 
 const r2 = new AwsClient({ accessKeyId, secretAccessKey })
@@ -248,6 +273,8 @@ for (const file of files) {
             const uploadedDir = join(dirname(file), 'uploaded')
             mkdirSync(uploadedDir, { recursive: true })
             renameSync(file, join(uploadedDir, basename(file)))
+            // 顺序清单：新图自动置顶（与画廊“新的在前”一致）
+            updateOrderList([`${base}.${out.ext}`])
         }
     } catch (err) {
         failed++
