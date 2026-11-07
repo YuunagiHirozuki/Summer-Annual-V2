@@ -21,6 +21,13 @@ export default defineConfig({
         mermaid({ theme: 'dark', autoTheme: true }),
     ],
 
+    image: {
+        // 直通服务：所有图片（Hero、封面、正文）原样输出——
+        // 不缩放、不转 WebP、不重编码，零画质损失。
+        // 恢复压缩：删掉这个 image 配置块即可回到 sharp 管线
+        service: { entrypoint: 'astro/assets/services/noop' },
+    },
+
     vite: {
         plugins: [tailwindcss()],
         define: {
