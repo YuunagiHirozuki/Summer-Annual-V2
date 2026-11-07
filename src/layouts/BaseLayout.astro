@@ -72,17 +72,15 @@ const { title, description, hero = 'half', heroImage } = Astro.props
 
     let lightbox: PhotoSwipeLightbox | undefined
 
-    /** 图片准备：
-        画廊 → PhotoSwipe 灯箱（尺寸声明给灯箱布局，服务端已声明全图地址）；
-        正文图 → 裸图直出（noop 原格式原图），不包裹不灯箱——
-        拖拽 = 拖出 .jpg/.png 原文件，另存 = 原格式，点击无特殊行为 */
+    /** 图片准备：把图片包进带 PhotoSwipe 数据属性的 <a>（官方推荐模式）。
+        图片本身保持可拖拽（拖出 .jpg/.png 原文件），锚点禁拖拽
+        （否则拖出去的是 .url 快捷方式）；灯箱显示的就是 noop 原样直出的原图 */
     function prepareImages(scope: ParentNode) {
         for (const img of scope.querySelectorAll<HTMLImageElement>(
-            '.gallery-grid img'
+            '.md-content img, .gallery-grid img'
         )) {
             if (img.dataset.pswpBound) continue
             img.dataset.pswpBound = '1'
-            img.draggable = false
 
             const setDims = () => {
                 const anchor = img.parentElement as HTMLAnchorElement
@@ -95,8 +93,18 @@ const { title, description, hero = 'half', heroImage } = Astro.props
                 )
             }
 
-            const anchor = img.parentElement as HTMLAnchorElement | null
-            if (!anchor || anchor.tagName !== 'A') continue
+            let anchor = img.parentElement as HTMLAnchorElement | null
+            if (!anchor || anchor.tagName !== 'A') {
+                anchor = document.createElement('a') as HTMLAnchorElement
+                anchor.href = img.currentSrc || img.src
+                anchor.draggable = false
+                img.replaceWith(anchor)
+                anchor.appendChild(img)
+            }
+            anchor.draggable = false
+            if (!anchor.dataset.pswpSrc) {
+                anchor.dataset.pswpSrc = anchor.href
+            }
             setDims()
             if (!img.complete) {
                 img.addEventListener('load', setDims, { once: true })
@@ -106,11 +114,11 @@ const { title, description, hero = 'half', heroImage } = Astro.props
 
     function initLightbox() {
         prepareImages(document)
-        if (!document.querySelector('.gallery-grid')) return
+        if (!document.querySelector('.md-content, .gallery-grid')) return
 
         lightbox?.destroy()
         lightbox = new PhotoSwipeLightbox({
-            gallery: '.gallery-grid',
+            gallery: '.md-content, .gallery-grid',
             children: 'a[data-pswp-src]',
             showHideAnimationType: 'fade',
             pswpModule: () => import('photoswipe'),
