@@ -7,14 +7,16 @@ const posts = await getSortedPosts()
 const tags = getTagCounts(posts)
 ---
 
+<!-- summerannual.page.dev/tags/ 标签墙预留位，未使用，点击标签未关联跳转，将关联herf至section h3 TAGs-->
+ <!-- 在想要不要改成Justified或瀑布流，统一标签墙组件和标签墙页面的标签展示方式，然后这两部分都改成低饱和度的彩色标签背景，8或12种固定颜色。根据标签名称生成固定颜色索引，自动维护 -->
 <BaseLayout title={`Tags - ${SITE_TITLE}`} hero="half">
     <div class="mx-auto w-full max-w-180 px-4 py-8">
         <h1 class="mb-10 text-center text-4xl font-bold">Tags</h1>
 
-        <ul class="grid gap-2">
+        <ul class="grid grid-cols-4 gap-2">
             {
                 tags.map(([tag, count]) => (
-                    <li class="rounded-sm bg-card px-4 py-3 shadow-md transition-shadow hover:shadow-lg">
+                    <li class="rounded-sm bg-card px-4 py-3 shadow-xs transition-shadow hover:shadow-sm">
                         <a
                             href={`/tags/${encodeURIComponent(tag)}/`}
                             class="flex items-baseline justify-between gap-4 no-underline"
@@ -22,8 +24,8 @@ const tags = getTagCounts(posts)
                             <span class="text-ink transition-colors hover:text-aqua">
                                 #{tag}
                             </span>
-                            <span class="shrink-0 text-sm text-muted">
-                                {count} 篇
+                            <span class="text-muted shrink-0 text-sm">
+                                {count} 
                             </span>
                         </a>
                     </li>
